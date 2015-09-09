@@ -31,7 +31,6 @@ ends an if block
 
 <:self>
 <:this>
-<:i>
 <:here>
 placeholder element, used to provide a place to put the template content, when there is other content before or after
 ```
@@ -52,6 +51,6 @@ use the `currency` helper on the content from the template matching this element
 <element :void>
 do not fill in this element's content (used for void elements such as <img> where you only want a `src` attribute to be filled in
 
-<element attr=":self|:this|:i|:here">
+<element attr=":self|:this|:here">
 if an element's attribute is any of these, the template content for that attribute will replace it.
 ```

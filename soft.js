@@ -868,7 +868,7 @@
         }, []);
     }
 
-    var softSelf = prefixed(['self', 'i', 'this', 'here']);
+    var softSelf = prefixed(['self', 'this', 'here']);
     var softAttributes = prefixed(['is', 'of', 'at', 'void']);
     var elements = prefixed([['import', 'include'], 'if', 'else', ['endif', 'fi']]);
     var softElements = flatten(elements);
@@ -944,9 +944,9 @@
             var ret = token.actual.original;
             list.forEach(function (item, index) {
                 if (index < 1)
-                    ret += item
+                    ret += item;
                 else
-                    ret += token.actual.original + item
+                    ret += token.actual.original + item;
             });
             return ret;
         }
