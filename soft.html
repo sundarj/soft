@@ -24,11 +24,13 @@
     <p>Help me bae <span :is="color"></span></p>
 
     <ul class="list">
-        <li class="list-item" :of="list-items"></li>
+        <li class="list-item" :of="list-items" data-item=":self"></li>
     </ul>
     
     <img src=":self" :is="image" :void>
+    <img src=":this" :is="image" :void>
 
     <pre class="license"><:import src="LICENSE"></pre>
+    <pre class="readme"><:include src="README.md"></pre>
 </body>
 </html>

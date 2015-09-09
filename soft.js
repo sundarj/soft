@@ -918,9 +918,11 @@
         return parsed;
     };
     
-    function unquote(attr) {
+    soft.internalHelpers = {};
+    
+    var unquote = soft.internalHelpers.unquote = function (attr) {
         return attr.value.replace(/['"]/g, '');
-    }
+    };
 
     soft.attributeActions = {
 
@@ -928,41 +930,37 @@
             var unquoted = unquote(attr);
             var original = token.actual.original;
             
-            if (~original.indexOf(softVoid)) {
-                softSelf.forEach(function (self) {
-                    original = original.replace(self, template[unquoted]);
-                });
-                return original;
-            }
+            softSelf.forEach(function (self) {
+                original = original.replace(new RegExp(self, "g"), template[unquoted]);
+            });
             
-            return original + template[unquoted];
+            return original + (~original.indexOf(softVoid) ? '' : template[unquoted]);
         },
 
-        ':of': function (token, template, attr) {
+        ':of': function (token, template, attr) {  
             var unquoted = unquote(attr);
             var list = template[unquoted];
-            var ret = token.actual.original;
+            var ret = '';
+            
             list.forEach(function (item, index) {
-                if (index < 1)
-                    ret += item;
-                else
-                    ret += token.actual.original + item;
+                ret += soft.attributeActions[':is'](token, list, {
+                    value: index+''
+                });
             });
+            
             return ret;
         }
 
     };
 
-    soft.defineAttribute = function (attr, action) {
-        soft.attributeActions[attr] = action;
-    }
-
     function renderAttribute(token, template) {
         var attributes = token.actual.content.attributes;
         var ret = token.actual.original;
+        
         attributes.forEach(function (attr) {
             var attribute = " " + attr.name + "=" + attr.value;
-
+            var unquoted = unquote(attr);
+            
             var action = soft.attributeActions[attr.name];
             if (action) {
                 ret = action(token, template, attr);
@@ -995,10 +993,6 @@
     };
 
     soft.elementActions[':include'] = soft.elementActions[':import'];
-
-    soft.defineElement = function (attr, action) {
-        soft.elementActions[attr] = action;
-    }
 
     function renderElement(token) {
         var content = token.actual.content;
