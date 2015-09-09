@@ -42,11 +42,12 @@ module.exports = (function() {
         peg$c3 = { type: "literal", value: "/", description: "\"/\"" },
         peg$c4 = ">",
         peg$c5 = { type: "literal", value: ">", description: "\">\"" },
-        peg$c6 = function(cs, t) {
+        peg$c6 = function(cs, t, sc) {
           return {
             type: 'tag',
             content: t,
-            closing: !!cs
+            closing: !!cs,
+            original: '<' + (cs || '') + elementBody(t) + (sc || '') + '>'
           };
         },
         peg$c7 = function(ht, attrs) {
@@ -82,14 +83,15 @@ module.exports = (function() {
         peg$c24 = function(quot) { return quot },
         peg$c25 = /^[^']/,
         peg$c26 = { type: "class", value: "[^']", description: "[^']" },
-        peg$c27 = function(val) { return val.join('') },
+        peg$c27 = function(q, val) { return q + val.join('') + q },
         peg$c28 = /^[^"]/,
         peg$c29 = { type: "class", value: "[^\"]", description: "[^\"]" },
         peg$c30 = /^[^'" >=]/,
         peg$c31 = { type: "class", value: "[^'\" >=]", description: "[^'\" >=]" },
-        peg$c32 = /^[^<]/,
-        peg$c33 = { type: "class", value: "[^<]", description: "[^<]" },
-        peg$c34 = function(txt) {
+        peg$c32 = function(val) { return val.join('') },
+        peg$c33 = /^[^<]/,
+        peg$c34 = { type: "class", value: "[^<]", description: "[^<]" },
+        peg$c35 = function(txt) {
           return {
             type: 'text',
             content: txt.join('')
@@ -349,7 +351,7 @@ module.exports = (function() {
               }
               if (s5 !== peg$FAILED) {
                 peg$savedPos = s0;
-                s1 = peg$c6(s2, s3);
+                s1 = peg$c6(s2, s3, s4);
                 s0 = s1;
               } else {
                 peg$currPos = s0;
@@ -639,7 +641,7 @@ module.exports = (function() {
           s3 = peg$parsesquote();
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
-            s1 = peg$c27(s2);
+            s1 = peg$c27(s1, s2);
             s0 = s1;
           } else {
             peg$currPos = s0;
@@ -685,7 +687,7 @@ module.exports = (function() {
           s3 = peg$parsedquote();
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
-            s1 = peg$c27(s2);
+            s1 = peg$c27(s1, s2);
             s0 = s1;
           } else {
             peg$currPos = s0;
@@ -739,7 +741,7 @@ module.exports = (function() {
         }
         if (s2 !== peg$FAILED) {
           peg$savedPos = s0;
-          s1 = peg$c27(s2);
+          s1 = peg$c32(s2);
           s0 = s1;
         } else {
           peg$currPos = s0;
@@ -758,22 +760,22 @@ module.exports = (function() {
 
       s0 = peg$currPos;
       s1 = [];
-      if (peg$c32.test(input.charAt(peg$currPos))) {
+      if (peg$c33.test(input.charAt(peg$currPos))) {
         s2 = input.charAt(peg$currPos);
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c33); }
+        if (peg$silentFails === 0) { peg$fail(peg$c34); }
       }
       if (s2 !== peg$FAILED) {
         while (s2 !== peg$FAILED) {
           s1.push(s2);
-          if (peg$c32.test(input.charAt(peg$currPos))) {
+          if (peg$c33.test(input.charAt(peg$currPos))) {
             s2 = input.charAt(peg$currPos);
             peg$currPos++;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c33); }
+            if (peg$silentFails === 0) { peg$fail(peg$c34); }
           }
         }
       } else {
@@ -781,12 +783,22 @@ module.exports = (function() {
       }
       if (s1 !== peg$FAILED) {
         peg$savedPos = s0;
-        s1 = peg$c34(s1);
+        s1 = peg$c35(s1);
       }
       s0 = s1;
 
       return s0;
     }
+
+
+      function elementBody(peg$tag) {
+        var ret = peg$tag.tagname;
+        ret += peg$tag.attributes.map(function(attr) {
+          return ' ' + attr.name + '=' + attr.value
+        }).join('');
+        return ret;
+      }
+
 
     peg$result = peg$startRuleFunction();
 

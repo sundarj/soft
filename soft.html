@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>soft</title>
-	<script src="soft.js"></script>
+    <meta charset="UTF-8">
+    <title>soft</title>
+    <script src="soft.js"></script>
+    <script>
+        onload = function () {
+            document.body.innerHTML = soft.render(document.body.innerHTML, {
+                title: 'animals',
+                description: 'these are animals, you know',
+                'list-items': ['woof', 'meow', 'ribbit', 'squeak'],
+                color: '#bada55'
+            });
+        }
+    </script>
 </head>
+
 <body>
-	<h1 :is="title"></h1>
-	<p :is="description"></p>
-    
-    <p>Help me bae</p>
-	
-	<ul class="list">
-		<li :of="list-items"></li>
-	</ul>
-    
-    <:import src="foo">
+    <h1 :is="title"></h1>
+    <p :is="description"></p>
+
+    <p>Help me bae <span :is="color"></span></p>
+
+    <ul class="list">
+        <li class="list-item" :of="list-items"></li>
+    </ul>
+
+    <pre class="license"><:import src="LICENSE"></pre>
 </body>
 </html>

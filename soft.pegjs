@@ -1,11 +1,22 @@
+{
+  function elementBody(peg$tag) {
+    var ret = peg$tag.tagname;
+    ret += peg$tag.attributes.map(function(attr) {
+      return ' ' + attr.name + '=' + attr.value
+    }).join('');
+    return ret;
+  }
+}
+
 document = (html / text)+
 
-html = '<' cs:'/'? t:tag '/'? '>'
+html = '<' cs:'/'? t:tag sc:'/'? '>'
 {
   return {
     type: 'tag',
     content: t,
-    closing: !!cs
+    closing: !!cs,
+    original: '<' + (cs || '') + elementBody(t) + (sc || '') + '>'
   };
 }
 
@@ -42,8 +53,8 @@ attributevalue = quotedattribute / unquotedattribute
 
 quotedattribute = "=" quot:(singlequoted / doublequoted) { return quot }
 
-singlequoted = squote val:[^']* squote { return val.join('') }
-doublequoted = dquote val:[^"]* dquote { return val.join('') }
+singlequoted = q:squote val:[^']* squote { return q + val.join('') + q }
+doublequoted = q:dquote val:[^"]* dquote { return q + val.join('') + q }
 
 unquotedattribute = "=" val:[^'" >=]+ { return val.join('') }
 
