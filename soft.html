@@ -10,7 +10,8 @@
                 title: 'animals',
                 description: 'these are animals, you know',
                 'list-items': ['woof', 'meow', 'ribbit', 'squeak'],
-                color: '#bada55'
+                color: '#bada55',
+                image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
             });
         }
     </script>
@@ -25,6 +26,8 @@
     <ul class="list">
         <li class="list-item" :of="list-items"></li>
     </ul>
+    
+    <img src=":self" :is="image" :void>
 
     <pre class="license"><:import src="LICENSE"></pre>
 </body>

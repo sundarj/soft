@@ -23,25 +23,6 @@
     }
 
 
-
-    var lexicon = new Map;
-
-    function prefixed(array) {
-        var prefix = ':';
-        return array.map(function (item) {
-            return item.map ? prefixed(item) : prefix + item;
-        });
-    }
-
-    lexicon.set("attributes", prefixed(['is', 'of', 'at', 'void']));
-    lexicon.set("elements", prefixed([['import', 'include'], 'if', 'else', ['endif', 'fi']]));
-
-    function flatten(array) {
-        return array.reduce(function (a, b) {
-            return a.concat(b);
-        }, []);
-    }
-
     var parser = (function () {
         "use strict";
 
@@ -869,20 +850,40 @@
             parse: peg$parse
         };
     })();
+    
+    
+    
+    var lexicon = new Map;
 
+    function prefixed(array) {
+        var prefix = ':';
+        return array.map(function (item) {
+            return item.map ? prefixed(item) : prefix + item;
+        });
+    }
+    
+    function flatten(array) {
+        return array.reduce(function (a, b) {
+            return a.concat(b);
+        }, []);
+    }
+
+    var softSelf = prefixed(['self', 'i', 'this', 'here']);
+    var softAttributes = prefixed(['is', 'of', 'at', 'void']);
+    var elements = prefixed([['import', 'include'], 'if', 'else', ['endif', 'fi']]);
+    var softElements = flatten(elements);
+    var softVoid = ':void';
+    
 
     function htmlEntities(str) {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    var unescapedElementRegex = new RegExp('&lt;(' + flatten(lexicon.get('elements')).join('|') + ')[^&]+?&gt;', 'g');
+    var unescapedElementRegex = new RegExp('&lt;(' + softElements.join('|') + ')[^&]+?&gt;', 'g');
 
     function SoftError(message) {
         return 'SoftError: ' + message;
     }
-
-    var softAttributes = lexicon.get('attributes');
-    var softElements = flatten(lexicon.get('elements'));
 
     soft.parse = function (string) {
         if (typeof string !== 'string')
@@ -925,7 +926,16 @@
 
         ':is': function (token, template, attr) {
             var unquoted = unquote(attr);
-            return token.actual.original + template[unquoted];
+            var original = token.actual.original;
+            
+            if (~original.indexOf(softVoid)) {
+                softSelf.forEach(function (self) {
+                    original = original.replace(self, template[unquoted]);
+                });
+                return original;
+            }
+            
+            return original + template[unquoted];
         },
 
         ':of': function (token, template, attr) {
