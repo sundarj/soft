@@ -853,12 +853,12 @@
     
     
     
-    var lexicon = new Map;
+    /* start soft.js code */
 
     function prefixed(array) {
         var prefix = ':';
         return array.map(function (item) {
-            return item.map ? prefixed(item) : prefix + item;
+            return prefix + item;
         });
     }
     
@@ -867,12 +867,14 @@
             return a.concat(b);
         }, []);
     }
+    
+    soft.syntax = {};
 
-    var softSelf = prefixed(['self', 'this', 'here']);
-    var softAttributes = prefixed(['is', 'of', 'at', 'void']);
-    var elements = prefixed([['import', 'include'], 'if', 'else', ['endif', 'fi']]);
+    var softSelf = soft.syntax.self = prefixed(['self', 'this', 'here']);
+    var softAttributes = soft.syntax.attributes = prefixed(['is', 'of', 'at', 'void']);
+    var elements = soft.syntax.elements = prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']).concat(softSelf);
     var softElements = flatten(elements);
-    var softVoid = ':void';
+    var softVoid = soft.syntax.void = ':void';
     
 
     function htmlEntities(str) {
@@ -884,18 +886,25 @@
     function SoftError(message) {
         return 'SoftError: ' + message;
     }
+    
+    function onlyTruthy(x) { return !!x }
+    
+    function unescape(html) {
+        return html.replace(/&(l|g)t;/g, function (match, direction) {
+            if (direction === 'l')
+                return '<';
+            else
+                return '>';
+        });
+    }
 
     soft.parse = function (string) {
         if (typeof string !== 'string')
             throw SoftError('Cannot parse ' + typeof string);
 
-        var unescaped = string.replace(unescapedElementRegex, function (match) {
-            return match.replace('&lt;', '<').replace('&gt;', '>'); // turn &lt;:import ...&gt; into the "element"
-        });
+        var unescaped = string.replace(unescapedElementRegex, unescape); // turn &lt;:import ...&gt; into the "element"
 
         var parsed = parser.parse(unescaped);
-
-        function onlyTruthy(x) { return !!x }
 
         parsed = parsed.filter(function (token) {
             return !token.closing && token.type !== 'text';
@@ -923,18 +932,45 @@
     var unquote = soft.internalHelpers.unquote = function (attr) {
         return attr.value.replace(/['"]/g, '');
     };
+    
+    var outerHTML = soft.internalHelpers.outerHTML = function (open, tagname) {
+        if (~open.indexOf(softVoid)) {
+            return false
+        }
+        
+        var close = '</' + tagname + '>';
+        var full = soft.origin.slice(soft.origin.indexOf(open));
+        
+        full = full.slice(0, full.indexOf(close) + close.length);
+        
+        return {
+            full: full,
+            close: close
+        };
+    };
 
     soft.attributeActions = {
 
         ':is': function (token, template, attr) {
             var unquoted = unquote(attr);
-            var original = token.actual.original;
+            var original = token.actual.original
+            var ret = original;
+            
+            var hasVoid = ~original.indexOf(softVoid);
+            var html = outerHTML(original, token.actual.content.tagname);
+            var isEmpty = html && (html.full.length === ((original + html.close).length));
             
             softSelf.forEach(function (self) {
-                original = original.replace(new RegExp(self, "g"), template[unquoted]);
+                
+                if (!isEmpty) {
+                    
+                }
+                
+                ret = ret.replace(new RegExp(self, "g"), template[unquoted]);
             });
             
-            return original + (~original.indexOf(softVoid) ? '' : template[unquoted]);
+            return ret + ( hasVoid? '' : template[unquoted] );
+            
         },
 
         ':of': function (token, template, attr) {  
@@ -959,7 +995,6 @@
         
         attributes.forEach(function (attr) {
             var attribute = " " + attr.name + "=" + attr.value;
-            var unquoted = unquote(attr);
             
             var action = soft.attributeActions[attr.name];
             if (action) {
@@ -1003,18 +1038,11 @@
         }
         return ret;
     }
-    
-    function unescape(html) {
-        return html.replace(/&(l|g)t;/g, function (match, direction) {
-            if (direction === 'l')
-                return '<';
-            else
-                return '>';
-        });
-    }
 
     soft.render = function (it, template) {
         var parsed = soft.parse(it);
+        soft.origin = it;
+        
         parsed.forEach(function (token) {
             if (token.type === 'attribute')
                 it = it.replace(token.actual.original, renderAttribute(token, template))
@@ -1024,6 +1052,8 @@
         
         return it;
     }
+    
+    
 
     if (typeof define == 'function' && define.amd) {
         define('soft', [], function () {
