@@ -933,20 +933,28 @@
         return attr.value.replace(/['"]/g, '');
     };
     
-    var outerHTML = soft.internalHelpers.outerHTML = function (open, tagname) {
+    var innerHTML = soft.internalHelpers.innerHTML = function (open, tagname) {
         if (~open.indexOf(softVoid)) {
-            return false
+            return '';
         }
         
         var close = '</' + tagname + '>';
         var full = soft.origin.slice(soft.origin.indexOf(open));
+        var inner = full.slice(open.length, full.indexOf(close));
         
+        return inner;
+    }
+    
+    var outerHTML = soft.internalHelpers.outerHTML = function (open, tagname) {
+        if (~open.indexOf(softVoid)) {
+            return '';
+        }
+        
+        var close = '</' + tagname + '>';
+        var full = soft.origin.slice(soft.origin.indexOf(open));
         full = full.slice(0, full.indexOf(close) + close.length);
         
-        return {
-            full: full,
-            close: close
-        };
+        return full;
     };
 
     soft.attributeActions = {
@@ -957,19 +965,25 @@
             var ret = original;
             
             var hasVoid = ~original.indexOf(softVoid);
-            var html = outerHTML(original, token.actual.content.tagname);
-            var isEmpty = html && (html.full.length === ((original + html.close).length));
+            var tagname = token.actual.content.tagname;
+            
+            var inner = innerHTML(original, tagname);
+            var outer = outerHTML(original, tagname);
+            var isEmpty = !inner && hasVoid;
             
             softSelf.forEach(function (self) {
                 
                 if (!isEmpty) {
-                    
+                    var element = '<' + self + '>';
+                    if (~inner.indexOf(element)) {
+                        ret = outer.replace(element, template[unquoted]);
+                    }
                 }
                 
                 ret = ret.replace(new RegExp(self, "g"), template[unquoted]);
             });
             
-            return ret + ( hasVoid? '' : template[unquoted] );
+            return ret + ( (hasVoid || !isEmpty) ? '' : template[unquoted] );
             
         },
 
@@ -1041,13 +1055,20 @@
 
     soft.render = function (it, template) {
         var parsed = soft.parse(it);
-        soft.origin = it;
+        soft.origin = unescape(it);
         
         parsed.forEach(function (token) {
-            if (token.type === 'attribute')
-                it = it.replace(token.actual.original, renderAttribute(token, template))
-            else
-                it = unescape(it).replace(token.actual.original, renderElement(token));
+            var actual = token.actual;
+            
+            if (token.type === 'attribute') {
+                var inner = innerHTML(actual.original, actual.content.tagname);
+                var outer = outerHTML(actual.original, actual.content.tagname);
+                var rendered = renderAttribute(token, template);
+                console.log(inner, outer, rendered);
+                it = it.replace(inner? outer : actual.original, rendered);
+            } else {
+                it = unescape(it).replace(actual.original, renderElement(token));
+            }
         });
         
         return it;
