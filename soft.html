@@ -24,13 +24,14 @@
     <p>Help me be <span :is="color"></span></p>
 
     <ul class="list">
-        <li class="list-item" :of="list-items" data-item=":self">item is <:self></li>
+        <li class="list-item" :of="list-items" data-item=":self">item is &gt; <:self></li>
     </ul>
     
     <img src=":self" :is="image" :void>
     <img src=":this" :is="image" :void>
-
+    
+    <!-- todo: add html escaping, in soft.parser too (for text) -->
     <pre class="license"><:import src="LICENSE"></pre>
-    <pre class="readme"><:include src="README.md"></pre>
+    <pre class="readme"><:include src="README.md" escaped></pre>
 </body>
 </html>

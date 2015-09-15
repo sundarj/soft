@@ -8,7 +8,7 @@
   }
 }
 
-document = (html / text)+
+document = (html / text / comment)+
 
 html = '<' cs:'/'? t:tag sc:'/'? '>'
 {
@@ -65,5 +65,14 @@ text = txt:[^<]+
   return {
     type: 'text',
     content: txt.join('')
+  }
+}
+
+
+/* https://gist.github.com/netgusto/f9866c8abff3672406d4 */
+comment = "<!--" c:(!"-->" c:. {return c })+ "-->" {
+  return {
+    type: 'comment',
+    content: c.join('')
   }
 }
