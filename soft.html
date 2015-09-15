@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>soft</title>
     <script src="soft.js"></script>
     <script>
-        onload = function () {
-            document.body.innerHTML = soft.render(document.body.innerHTML, {
+        var template = {
                 title: 'animals',
                 description: 'these are animals, you know',
                 'list-items': ['woof', 'meow', 'ribbit', 'squeak'],
                 color: '#bada55',
                 image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
-            });
-        }
+        };
+        
+        soft.when(template);
     </script>
 </head>
 
@@ -24,14 +25,17 @@
     <p>Help me be <span :is="color"></span></p>
 
     <ul class="list">
-        <li class="list-item" :of="list-items" data-item=":self">item is &gt; <:self></li>
+        <li class="list-item" :of="list-items" data-item=":self">item is &gt;
+            <:self>
+        </li>
     </ul>
-    
+
     <img src=":self" :is="image" :void>
     <img src=":this" :is="image" :void>
-    
+
     <!-- todo: add html escaping, in soft.parser too (for text) -->
     <pre class="license"><:import src="LICENSE"></pre>
     <pre class="readme"><:include src="README.md" escaped></pre>
 </body>
+
 </html>
