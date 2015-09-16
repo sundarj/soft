@@ -2,7 +2,7 @@
   function elementBody(peg$tag) {
     var ret = peg$tag.tagname;
     ret += peg$tag.attributes.map(function(attr) {
-      return ' ' + attr.name + '=' + attr.value
+      return ' ' + attr.name + (attr.value ? '=' + attr.value : '')
     }).join('');
     return ret;
   }
@@ -38,7 +38,7 @@ attribute = whitespace attrName:attributename attrVal:attributevalue?
   if (attrVal && attrVal.length < 1) attrVal = 'empty'
   return {
     name: attrName,
-    value: attrVal || true
+    value: attrVal || ''
   }
 }
 
