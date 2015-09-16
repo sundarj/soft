@@ -1241,8 +1241,7 @@
                 var rendered = renderAttribute(token, template);
                 var inner = innerHTML(actual.original, actual.content.tagname);
                 var outer = outerHTML(actual.original, actual.content.tagname);
-                console.log(rendered);
-                it = it.replace(inner ? outer : actual.original, rendered);
+                it = it.replace(inner ? unescape(outer) : actual.original, rendered);
             } else if (token.type === 'element') {
                 it = it.replace(actual.original, renderElement(token));
             }
@@ -1254,11 +1253,11 @@
     soft.when = function (template, event) {
         if (soft.isNode)
             throw SoftError('soft.when is a browser-only function');
-            
+
         root.addEventListener(event || "DOMContentLoaded", function () {
             document.body.innerHTML = soft.render(document.body.innerHTML, template);
         });
-    }
+    };
 
 
 
