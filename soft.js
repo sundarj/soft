@@ -1265,7 +1265,6 @@
                 it = it.replace(inner ? unescape(outer) : actual.original, rendered);
             } else if (token.type === 'element') {
                 var rendered = renderElement(token);
-                console.log(actual.original, rendered);
                 it = it.replace(actual.original, rendered);
             }
         });
