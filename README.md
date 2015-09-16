@@ -14,8 +14,8 @@ Syntaxes of either kind can be easily defined if needed.
 #### elements
 
 ```html
-<:import src="file/to/import">
-<:include src="file/to/import">
+<:import src="file/to/import" escaped?>
+<:include src="file/to/import" escaped?>
 imports a file into the current document
 
 <:if object>
@@ -53,4 +53,22 @@ do not fill in this element's content (used for void elements such as <img> wher
 
 <element attr=":self|:this|:here">
 if an element's attribute is any of these, the template content for that attribute will replace it.
+```
+
+
+#### usage
+
+Soft can compile a string, or render that string in realtime; the choice is yours.
+
+```js
+# compiling
+var render = soft.compile('<h1 :is="title"></h1>');
+render({
+    title: 'an amazing title' 
+});
+
+# realtime
+soft.render('<h1 :is="title"></h1>', {
+   title: 'another amazing title' 
+});
 ```

@@ -1075,7 +1075,7 @@
             }
         }).filter(onlyTruthy);
 
-        return parsed;
+        return (parsed.length < 1)? string : parsed;
     };
 
     var unquote = soft.internalHelpers.unquote = function (attr) {
@@ -1230,13 +1230,32 @@
         return template;
 
     };
+    
+    soft.cache = Object.create(null);
+    
+    soft.compile = function (string) {
+        string = soft.origin = unescape(string);
+        
+        var parsed = string in soft.cache?
+            soft.cache[string] :
+            (soft.cache[string] = soft.parse(string));
+        
+        if (typeof parsed === 'string') { // bail out
+            return function () {
+                return parsed;
+            }
+        }
+        return soft.render.bind(parsed);
+    };
 
-    soft.render = function (it, template) {
-        it = soft.origin = unescape(it);
-        var parsed = soft.parse(it);
+    soft.render = function (template, other) {
+        if (typeof template === 'string')
+            return soft.compile(template)(other);
+        
         template = deepEscape(template);
-
-        parsed.forEach(function (token) {
+        
+        var it = soft.origin;
+        this.forEach(function (token) {
             var actual = token.actual;
 
             if (token.type === 'attribute') {
@@ -1252,15 +1271,6 @@
         });
 
         return it;
-    };
-    
-    soft.when = function (template, event) {
-        if (soft.isNode)
-            throw SoftError('soft.when is a browser-only function');
-
-        root.addEventListener(event || "DOMContentLoaded", function () {
-            document.body.innerHTML = soft.render(document.body.innerHTML, template);
-        });
     };
 
 
