@@ -8,7 +8,7 @@ Soft is an extensible templating engine that aims to be as close to plain HTML a
 
 #### syntax
 
-Soft uses two basic types of expression: elements and attributes, which can be plugged in to an existing HTML document, and follow the same syntax.
+Soft uses two basic types of expression: elements and attributes, which can be plugged in to an existing HTML document, and follows the same syntax.
 
 #### elements
 
