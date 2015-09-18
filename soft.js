@@ -1,6 +1,6 @@
-"use strict";
-
 (function () {
+    
+    "use strict";
 	
     // UMD from underscorejs.org
 
@@ -1021,8 +1021,6 @@
     var softVoid = soft.syntax.void = ':void';
     
 
-    //var unescapedElementRegex = new RegExp('&lt;(' + softElements.join('|') + ')[^&]+?&gt;', 'g');
-
     function SoftError(message) {
         return 'SoftError: ' + message;
     };
@@ -1051,33 +1049,6 @@
 
     };
 
-    soft.parse = function (string) {
-        if (typeof string !== 'string')
-            throw SoftError('Cannot parse ' + typeof string);
-
-        var parsed = parser.parse(string);
-
-        parsed = parsed.filter(function (token) {
-            return !token.closing && !~['text', 'comment'].indexOf(token.type);
-        }).map(function (element) {
-            var isSoftElement = ~softElements.indexOf(element.content.tagname);
-            var isSoftAttribute = false;
-            element.content.attributes.forEach(function (attr) {
-                if (~softAttributes.indexOf(attr.name))
-                    isSoftAttribute = true;
-            });
-
-            if (isSoftElement || isSoftAttribute) {
-                return {
-                    type: isSoftAttribute ? 'attribute' : 'element',
-                    actual: element
-                };
-            }
-        }).filter(onlyTruthy);
-
-        return (parsed.length < 1)? string : parsed;
-    };
-
     var unquote = soft.internalHelpers.unquote = function (attr) {
         return attr.value.replace(/['"]/g, '');
     };
@@ -1094,77 +1065,19 @@
         return reescape(inner);
     }
 
-    var outerHTML = soft.internalHelpers.outerHTML = function (open, tagname) {
+    var outerHTML = soft.internalHelpers.outerHTML = function (open, tagname, parent) {
         if (~open.indexOf(softVoid)) {
             return open;
         }
 
         var close = '</' + tagname + '>';
-        return open + innerHTML(open, tagname) + close;
+        return open + innerHTML(open, tagname, parent) + close;
     };
-
-    soft.attributeActions = {
-
-        ':is': function (token, template, attr) {
-            var unquoted = unquote(attr);
-            var original = token.actual.original
-            var ret = original;
-
-            var hasVoid = ~original.indexOf(softVoid);
-            var tagname = token.actual.content.tagname;
-
-            var inner = innerHTML(original, tagname);
-            var outer = outerHTML(original, tagname);
-            var isEmpty = !inner || hasVoid;
-
-            softSelf.forEach(function (self) {
-
-                if (!isEmpty) {
-                    var element = '&lt;' + self + '&gt;';
-                    if (~inner.indexOf(element)) {
-                        ret = outer.replace(element, template[unquoted]);
-                    }
-                }
-
-                ret = ret.replace(new RegExp(self, "g"), template[unquoted]);
-            });
-
-            return ret + ((hasVoid || !isEmpty) ? '' : template[unquoted]);
-
-        },
-
-        ':of': function (token, template, attr) {
-            var unquoted = unquote(attr);
-            var list = template[unquoted];
-            var ret = '';
-
-            list.forEach(function (item, index) {
-                ret += soft.attributeActions[':is'](token, list, {
-                    value: index + ''
-                });
-            });
-
-            return ret;
-        }
-
+    
+    var stripAttributes = soft.internalHelpers.stripAttributes = function (tag, attr) {
+        var attribute = ' ' + attr.name + '=' + attr.value;
+        return tag.replace(new RegExp(attribute, 'g'), '');
     };
-
-    function renderAttribute(token, template) {
-        var attributes = token.actual.content.attributes;
-        var ret = token.actual.original;
-
-        attributes.forEach(function (attr) {
-            var attribute = " " + attr.name + "=" + attr.value;
-
-            var action = soft.attributeActions[attr.name];
-            if (action) {
-                ret = action(token, template, attr);
-            }
-            ret = ret.replace(new RegExp(attribute, "g"), '');
-        });
-
-        return ret;
-    }
 
     var softImport = soft.internalHelpers.import = function (src) {
         var http = new XMLHttpRequest();
@@ -1172,39 +1085,6 @@
         http.send();
         return http.responseText;
     }
-
-    soft.elementActions = {
-
-        ':import': function (args) {
-            var ret;
-            args.forEach(function (arg) {
-                switch (arg.name) {
-                    case "src":
-                        var src = unquote(arg);
-                        ret = softImport(src);
-                        break;
-                    case "escaped":
-                        ret = reescape(ret);
-                        break;
-                   
-                }
-            });
-            return ret;
-        }
-
-    };
-
-    soft.elementActions[':include'] = soft.elementActions[':import'];
-
-    function renderElement(token) {
-        var content = token.actual.content;
-        var action = soft.elementActions[content.tagname];
-        var ret;
-        if (action) {
-            ret = action(content.attributes);
-        }
-        return ret;
-    };
 
     var typeOf = soft.internalHelpers.typeOf = function (obj) {
         return Object.prototype.toString.call(obj)
@@ -1230,47 +1110,7 @@
         return template;
 
     };
-    
-    soft.cache = Object.create(null);
-    
-    soft.compile = function (string) {
-        string = soft.origin = unescape(string);
-        
-        var parsed = string in soft.cache?
-            soft.cache[string] :
-            (soft.cache[string] = soft.parse(string));
-        
-        if (typeof parsed === 'string') { // bail out
-            return function () {
-                return parsed;
-            }
-        }
-        return soft.render.bind(parsed);
-    };
-
-    soft.render = function (template, other) {
-        if (typeof template === 'string')
-            return soft.compile(template)(other);
-        
-        template = deepEscape(template);
-        
-        var it = soft.origin;
-        this.forEach(function (token) {
-            var actual = token.actual;
-
-            if (token.type === 'attribute') {
-                var rendered = renderAttribute(token, template);
-                var inner = innerHTML(actual.original, actual.content.tagname);
-                var outer = outerHTML(actual.original, actual.content.tagname);
-                it = it.replace(inner ? unescape(outer) : actual.original, rendered);
-            } else if (token.type === 'element') {
-                var rendered = renderElement(token);
-                it = it.replace(actual.original, rendered);
-            }
-        });
-
-        return it;
-    };
+ 
 
 
 

@@ -10,8 +10,15 @@
                 title: 'animals',
                 description: 'these are animals, you know',
                 'list-items': ['woof', 'meow', 'ribbit', 'squeak'],
-                color: '#bada55',
+                color: 'bada55',
                 image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
+        };
+        
+        soft.helpers = {
+            color: function(text) {
+                if (text[0] != '#')
+                    return '#' + text;
+            }
         };
         
         onload = function() {
@@ -20,15 +27,19 @@
         };
     </script>
 </head>
-
 <body>
+    <!-- todo:
+         https://docs.djangoproject.com/en/1.7/topics/templates/#template-inheritance
+         http://paularmstrong.github.io/swig/docs/
+    -->
+    
     <h1 :is="title"></h1>
     <p :is="description"></p>
 
-    <p>Help me be <span :is="color"></span></p>
+    <p>Help me be <span :is="color" :as="color"></span></p>
 
     <ul class="list">
-        <li class="list-item" :of="list-items" data-item=":self">item is &gt; <:self></li>
+        <li class="list-item" :of="list-items" :as="color" data-item=":self">item is &gt; <:self></li>
     </ul>
 
     <img src=":self" :is="image" :void>
