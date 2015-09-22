@@ -4,22 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <title>soft</title>
-    <script src="soft.js"></script>
+    <script src="soft.3.js"></script>
     <script>
         var template = {
-                title: 'animals',
-                description: 'these are animals, you know',
-                'list-items': ['woof', 'meow', 'ribbit', 'squeak'],
+                title: 'an title',
+                description: 'i am enlightening you as you read this',
+                items: ['wow', 'what', 'a', 'super', 'list'],
+                objects: [{
+                    first: '#1.1',
+                    second: '#1.2'
+                },
+                {
+                    first: '#2.1',
+                    second: '#2.2'
+                }],
                 color: 'bada55',
                 image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
         };
         
-        soft.helpers = {
-            color: function(text) {
-                if (text[0] != '#')
-                    return '#' + text;
-            }
-        };
+        soft.helper('color', function(text) {
+            if (text.charAt(0) !== '#')
+                 return '#' + text;
+        });
         
         onload = function() {
             var render = soft.compile(document.body.innerHTML);
@@ -39,14 +45,14 @@
     <p>Help me be <span :is="color" :as="color"></span></p>
 
     <ul class="list">
-        <li class="list-item" :of="list-items" :as="color" data-item=":self">item is &gt; <:self></li>
+        <li class="list-item" :of="items" :as="color" data-item=":self">item is &gt; <:self></li>
     </ul>
 
     <img src=":self" :is="image" :void>
     <img src=":this" :is="image" :void>
 
-    <pre class="license"><:import src="LICENSE"></pre>
-    <pre class="readme"><:include src="README.md" escaped></pre>
+    <pre class="license"><import src="LICENSE"></pre>
+    <pre class="readme"><include src="README.md" escaped></pre>
 </body>
 
 </html>

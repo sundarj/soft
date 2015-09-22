@@ -13,24 +13,24 @@ Soft uses two basic types of expression: elements and attributes, which can be p
 #### elements
 
 ```html
-<:import src="file/to/import" escaped?>
-<:include src="file/to/import" escaped?>
+<import src="file/to/import" escaped?>
+<include src="file/to/import" escaped?>
 imports a file into the current document
 
-<:if object>
-<:if thing="value">
+<if object>
+<if thing="value">
 starts an if block
 
-<:else>
+<else>
 starts an else block
 
-<:endif>
-<:fi>
+<endif>
+<fi>
 ends an if block
 
-<:self>
-<:this>
-<:here>
+<self>
+<this>
+<here>
 placeholder element, used to provide a place to put the template content, when there is other content before or after
 ```
 

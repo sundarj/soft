@@ -1,29 +1,32 @@
-{
-  function elementBody(peg$tag) {
-    var ret = peg$tag.tagname;
-    ret += peg$tag.attributes.map(function(attr) {
-      return ' ' + attr.name + (attr.value ? '=' + attr.value : '')
-    }).join('');
-    return ret;
+document = (html / text / comment)+
+
+html = markup:(open document? close?) {
+  return {
+    type: 'element',
+    content: markup
   }
 }
 
-document = (html / text / comment)+
-
-html = '<' cs:'/'? t:tag sc:'/'? '>'
+open = '<' tn:tagname attrs:attribute* '/'? '>'
 {
   return {
-    type: 'tag',
-    content: t,
-    closing: !!cs,
-    original: '<' + (cs || '') + elementBody(t) + (sc || '') + '>'
+    type: 'open tag',
+    tagname: tn,
+    attributes: attrs
   };
 }
 
-tag = ht:tagname attrs:attribute*
+close = '</' tn:tagname '>' {
+  return {
+    type: 'close tag',
+    tagname: tn
+  }
+}
+
+tag = tn:tagname attrs:attribute*
 {
   return {
-    tagname: ht,
+    tagname: tn,
     attributes: attrs
   } 
 }
