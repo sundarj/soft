@@ -28,30 +28,29 @@ starts an else block
 <fi>
 ends an if block
 
-<self>
-<this>
-<here>
+<:self>
+<:this>
+<:here>
 placeholder element, used to provide a place to put the template content, when there is other content before or after
 ```
-
 
 #### attributes
 
 ```html
 <element :is="title">
-use the content from the template under the "title" key within element
+insert the content from the template under the "title" key into the element
 
-<element :of="somearray">
+<element :of="array">
 iterate over `somearray`, creating a new element for each item
 
-<element :as="currency">
-use the `currency` helper on the content from the template matching this element (used with other attributes)
+<element :of|:is :as="currency">
+use the `currency` helper on the content from the template matching this element
 
 <element :void>
-do not fill in this element's content (used for void elements such as <img> where you only want a `src` attribute to be filled in
+do not fill in this element's content (used for void elements such as <img> where you only want a `src` attribute to be filled in)
 
 <element attr=":self|:this|:here">
-if an element's attribute is any of these, the template content for that attribute will replace it.
+if an element's attribute is any of these, the template content for that item will replace it.
 ```
 
 
@@ -70,4 +69,63 @@ render({
 soft.render('<h1 :is="title"></h1>', {
    title: 'another amazing title' 
 });
+```
+
+
+#### examples
+
+using template:
+
+```json{
+    "something": "soft.js",
+    "array": [1,2,3],
+    "objects": [{
+        "foo": 1,
+        "bar": 2
+    },{
+        "foo": 3,
+        "bar": 4
+    }]
+}
+```
+
+these:
+
+```html
+<p :is="something"></p>
+```
+
+```html
+<li :of="array"></li>
+```
+
+```html
+<li :of="array">item <:self></li>
+```
+
+```html
+<li :of="objects">(<:self bar>, <:self foo>)</li>
+```
+
+become:
+
+```html
+<p>soft.js</p>
+```
+
+```html
+<li>1</li>
+<li>2</li>
+<li>3</li>
+```
+
+```html
+<li>item 1</li>
+<li>item 2</li>
+<li>item 3</li>
+```
+
+```html
+<li>(2, 1)</li>
+<li>(4, 3)</li>
 ```

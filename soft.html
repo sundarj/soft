@@ -9,14 +9,16 @@
         var template = {
                 title: 'an title',
                 description: 'i am enlightening you as you read this',
-                items: ['wow', 'what', 'a', 'super', 'list'],
+                colors: ['fff', 'c00', 'ded', '22a0de', '1f1f1f'],
                 objects: [{
-                    first: '#1.1',
-                    second: '#1.2'
+                    first:  'one point one',
+                    second: 'one point two',
+                    third:  'one point three'
                 },
                 {
-                    first: '#2.1',
-                    second: '#2.2'
+                    first:  'two point one',
+                    second: 'two point two',
+                    third:  'two point three'
                 }],
                 color: 'bada55',
                 image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
@@ -44,8 +46,13 @@
 
     <p>Help me be <span :is="color" :as="color"></span></p>
 
-    <ul class="list">
-        <li class="list-item" :of="items" :as="color" data-item=":self">item is &gt; <:self></li>
+    <ul class="colors">
+        <li class="list-color" :of="colors" :as="color" data-item=":self">color is &lt;<:self>&gt;</li>
+    </ul>
+    
+    <ul class="obj">
+        <li class="obj-item" :of="objects" :is="first" :as="capitalize"></li>
+        <li class="obj-item" :of="objects" :as="capitalize"><:self second> <b><:self third></b></li>
     </ul>
 
     <img src=":self" :is="image" :void>

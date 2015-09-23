@@ -45,8 +45,6 @@
         helper: ':as'
     };
     
-    var attributeRegex = new RegExp(soft.syntax.attributes.join('|'), 'g');
-    var elementRegex = new RegExp(soft.syntax.elements.join('|'), 'g');
     var selfRegex = new RegExp(soft.syntax.self.join('|'), 'g')
     
     
@@ -111,7 +109,6 @@
         configurable: true,
         writable: true,
         value: function(target) {
-          'use strict';
           if (target === undefined || target === null) {
             throw new TypeError('Cannot convert first argument to object');
           }
@@ -136,10 +133,67 @@
           return to;
         }
       });
+    };
+    
+    if (!String.prototype.repeat) {
+        String.prototype.repeat = function(count) {
+            if (this == null) {
+                throw new TypeError('can\'t convert ' + this + ' to object');
+            }
+            var str = '' + this;
+            count = +count;
+            if (count != count) {
+                count = 0;
+            }
+            if (count < 0) {
+                throw new RangeError('repeat count must be non-negative');
+            }
+            if (count == Infinity) {
+                throw new RangeError('repeat count must be less than infinity');
+            }
+            count = Math.floor(count);
+            if (str.length == 0 || count == 0) {
+                return '';
+            }
+            // Ensuring count is a 31-bit integer allows us to heavily optimize the
+            // main part. But anyway, most current (August 2014) browsers can't handle
+            // strings 1 << 28 chars or longer, so:
+            if (str.length * count >= 1 << 28) {
+                throw new RangeError('repeat count must not overflow maximum string size');
+            }
+            var rpt = '';
+            for (;;) {
+                if ((count & 1) == 1) {
+                    rpt += str;
+                }
+                count >>>= 1;
+                if (count == 0) {
+                    break;
+                }
+                str += str;
+            }
+            return rpt;
+        }
     }
     
     Array.from = Array.from || function (arraylike) {
         return [].slice.call(arraylike);
+    };
+    
+    function isString(obj) {
+        return typeof obj === 'string';
+    };
+    
+    function isArray(obj) {
+        return Array.isArray(obj);
+    };
+    
+    function isObject(obj) {
+        return typeOf(obj) === 'Object';  
+    };
+    
+    function matchAll(string) {
+        return new RegExp(string, "g");
     };
     
     /* 
@@ -153,16 +207,33 @@
 
     var attributeActions = {
         
-        ':is': function (name) {
+        ':is': function (name, key) {
             var helper = this.getAttribute(':as') || '';
             if (helper)
                 helper = '::' + helper;
                 
-            var template = '{{' + name + helper + '}}';
+            key = key || '';
+            if (key)
+                key = '.' + key;
+                
+            var template = '{{' + name + key + helper + '}}';
+            var innerHTML = this.innerHTML;
             
             if (!isVoidElement(this)) {
-                this.innerHTML = template;
+                soft.syntax.self.forEach(function (self) {
+                    var selfElement = '&lt;' + self + '&gt;';
+                    if (~innerHTML.indexOf(selfElement))
+                        innerHTML = innerHTML.replace(selfElement, template);
+                }, this);
+                
+                if (!~innerHTML.indexOf(template)) {
+                    innerHTML = template;
+                }
+                
+                this.innerHTML = innerHTML;
             }
+            
+            console.log(this);
             
             Array.from(this.attributes).forEach(function (attribute) {
                 attribute.value = attribute.value.replace(selfRegex, template);
@@ -171,7 +242,10 @@
         
         ':of': function (name) {
             this.setAttribute('soft-repeat', 'repeat');
-            attributeActions[':is'].call(this, name);
+            var key = this.getAttribute(':is');
+            this.removeAttribute(':is');
+            
+            attributeActions[':is'].call(this, name, key);
         },
         
         ':as': noop,
@@ -200,11 +274,13 @@
         return Array.from(element.attributes).some(function (attribute) {
             return ~soft.syntax.attributes.indexOf(attribute.name);
         });
-    }
+    };
+    
+    var allElements;
                       
     function prerender(document) {
-        var all = Array.from(document.querySelectorAll('*'));
-        prerenderAttributes(all.filter(hasSoftAttributes));
+        allElements = Array.from(document.querySelectorAll('*'));
+        prerenderAttributes(allElements.filter(hasSoftAttributes));
         
         return document;
     };
@@ -223,8 +299,8 @@
     soft.document = document.createElement('body'); 
     
     soft.parse = function (body) {
-        if (typeof body !== 'string')
-            throw SoftError('cannot parse object of type ' + typeof body);
+        if (!isString(body))
+            throw SoftError('cannot parse object of type ' + typeOf(body));
             
         soft.document.innerHTML = body;
         
@@ -245,37 +321,78 @@
         return soft.render.bind(parsed);
     };
     
-    var templateRegex = /{{([^}]+?)}}/g;
+    var templateRegex = /{{([^}]+?)}}/;
     
-    soft.render = function (template, other) {
-        if (typeof template === 'string')
-            return soft.compile(template)(other);
-            
-        Array.from(this.querySelectorAll('[soft-repeat]')).forEach(function (item) {
-            var match = templateRegex.exec(item.innerHTML);
-            match = match && match[1];
-            
-            var key = match.split("::")[0];
-            
-            item.removeAttribute('soft-repeat');
-            item.outerHTML = item.outerHTML.repeat(template[key].length);
+    function renderSingle(element, template) {
+        var matches = element.outerHTML.match(templateRegex);
+        
+        if (!matches)
+            return;
+        
+        var full = matches[0];
+        var name = matches[1];
+        
+        var nameParts = name.split("::");
+        var fromTemplate = template[nameParts[0]];
+        var helper = soft.helpers[nameParts[1]];
+        
+        if (helper) {
+            fromTemplate = helper(fromTemplate);
+        };
+        
+        element.outerHTML = element.outerHTML.replace(matchAll(full), fromTemplate);
+    };
+    
+    function renderList(element, template) {
+        var matches = element.innerHTML.match(templateRegex);
+        
+        Array.from(element.children).forEach(function (child) {
+            child.removeAttribute('soft-repeat');
         });
         
-        return this.innerHTML.replace(templateRegex, function (full, text) {
-            var parts = text.split('::');
-            var helper = soft.helpers[parts[1]];
-            var fromTemplate = template[parts[0]];
+        var full = matches[0];
+        var name = matches[1];
+        
+        var nameParts = name.split("::");
+        var fromTemplate = template[nameParts[0]];
+        
+        if (!isArray(fromTemplate))
+            throw SoftError('value passed to :of must be of type Array, not ' + typeof fromTemplate);
+        
+        var helper = soft.helpers[nameParts[1]];
+        
+        if (helper) {
+            fromTemplate = fromTemplate.map(helper);
+        };
+        
+        var repl = element.innerHTML;
+        
+        fromTemplate.forEach(function (item, index) {
+            var replacement = repl.replace(matchAll(full), item);
             
-            if (helper) {
-                if (typeof fromTemplate === 'string')
-                    fromTemplate = helper(fromTemplate)
-                else if (Array.isArray(fromTemplate)) {
-
-                }
+            if (index < 1)
+                element.innerHTML = replacement;
+            else
+                element.innerHTML += replacement;
+        });
+    }
+    
+    soft.render = function (template, other) {
+        if (isString(template))
+            return soft.compile(template)(other);
+        
+        allElements.forEach(function (element) {
+            if (element.children.length)
+                return // do not attempt to render container elements
+            
+            if (element.getAttribute('soft-repeat')) {
+                renderList(element.parentNode, template);
+            } else {
+                renderSingle(element, template);
             }
-            
-            return fromTemplate;
-        }); 
+        });
+        
+        return this.innerHTML;
     };
  
 
