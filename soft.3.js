@@ -66,12 +66,12 @@
     };
     
     function htmlescape(str) {
-        return String(str).replace(/[&<>]/g, function (match) {
+        return String(str).replace(/[&<>]/g, function (char) {
             return ({
-                '&': '&amp;',
                 '<': '&lt;',
-                '>': '&gt;'
-            })[match];
+                '>': '&gt;',
+                '&': '&amp;'
+            })[char];
         });
 
     };
@@ -253,10 +253,15 @@
         
     };
     
-    soft.helpers = soft.helpers || {};
+    soft._helpers = soft._helpers || {};
     soft.helper = function (name, action) {
-        soft.helpers[name] = action;
+        soft._helpers[name] = action;
     };
+    soft.helpers = function (obj) {
+        Object.keys(obj).forEach(function (name) {
+            soft._helpers[name] = obj[name];
+        });
+    }
 
     function prerenderAttributes(elements) {
         elements.forEach(function (element) {
@@ -334,7 +339,7 @@
         
         var nameParts = name.split("::");
         var fromTemplate = template[nameParts[0]];
-        var helper = soft.helpers[nameParts[1]];
+        var helper = soft._helpers[nameParts[1]];
         
         if (helper) {
             fromTemplate = helper(fromTemplate);
@@ -359,7 +364,7 @@
         if (!isArray(fromTemplate))
             throw SoftError('value passed to :of must be of type Array, not ' + typeof fromTemplate);
         
-        var helper = soft.helpers[nameParts[1]];
+        var helper = soft._helpers[nameParts[1]];
         
         if (helper) {
             fromTemplate = fromTemplate.map(helper);
