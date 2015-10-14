@@ -22,8 +22,6 @@
         root.soft = soft;
     }
     
-    
-    
     /*
         start soft.js code 
         Initialization
