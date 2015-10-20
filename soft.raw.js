@@ -22,181 +22,6 @@
         root.soft = soft;
     }
     
-    /*
-        start soft.js code 
-        Initialization
-                            */
-
-    var SOFT_PREFIX = ':';
-
-    function prefixed(array) {
-        return array.map(function (item) {
-            return SOFT_PREFIX + item;
-        });
-    };
-
-    soft.syntax = {
-        self: prefixed(['self', 'this', 'here']),
-        attributes: prefixed(['is', 'of', 'as', 'void']),
-        elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-        void: ':void',
-        helper: ':as'
-    };
-
-    var selfRegex = new RegExp(soft.syntax.self.join('|'), 'g')
-    
-    
-    /*
-        Helper functions
-                            */
-
-    function SoftError(message) {
-        return 'SoftError: ' + message;
-    };
-
-    function htmlify(string) {
-        return string.replace(/&(l|g)t;/g, function (match, direction) {
-            if (direction === 'l')
-                return '<';
-            else
-                return '>';
-        });
-    };
-
-    function htmlescape(str) {
-        return String(str).replace(/[&<>]/g, function (char) {
-            return ({
-                '<': '&lt;',
-                '>': '&gt;',
-                '&': '&amp;'
-            })[char];
-        });
-
-    };
-
-    function typeOf(obj) {
-        return Object.prototype.toString.call(obj)
-            .replace(/\[object |\]/g, '');
-    };
-
-    function deepEscape(template) {
-
-        switch (typeOf(template)) {
-            case 'Array':
-                template = template.map(deepEscape);
-                break;
-            case 'Object':
-                Object.keys(template).forEach(function (item) {
-                    template[item] = deepEscape(template[item]);
-                });
-                break;
-            case 'String':
-                template = htmlescape(template);
-                break;
-        }
-
-        return template;
-
-    };
-
-    function noop(x) { return x };
-
-    if (!Object.assign) {
-        Object.defineProperty(Object, 'assign', {
-            enumerable: false,
-            configurable: true,
-            writable: true,
-            value: function (target) {
-                if (target === undefined || target === null) {
-                    throw new TypeError('Cannot convert first argument to object');
-                }
-
-                var to = Object(target);
-                for (var i = 1; i < arguments.length; i++) {
-                    var nextSource = arguments[i];
-                    if (nextSource === undefined || nextSource === null) {
-                        continue;
-                    }
-                    nextSource = Object(nextSource);
-
-                    var keysArray = Object.keys(Object(nextSource));
-                    for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
-                        var nextKey = keysArray[nextIndex];
-                        var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
-                        if (desc !== undefined && desc.enumerable) {
-                            to[nextKey] = nextSource[nextKey];
-                        }
-                    }
-                }
-                return to;
-            }
-        });
-    };
-
-    if (!String.prototype.repeat) {
-        String.prototype.repeat = function (count) {
-            if (this == null) {
-                throw new TypeError('can\'t convert ' + this + ' to object');
-            }
-            var str = '' + this;
-            count = +count;
-            if (count != count) {
-                count = 0;
-            }
-            if (count < 0) {
-                throw new RangeError('repeat count must be non-negative');
-            }
-            if (count == Infinity) {
-                throw new RangeError('repeat count must be less than infinity');
-            }
-            count = Math.floor(count);
-            if (str.length == 0 || count == 0) {
-                return '';
-            }
-            // Ensuring count is a 31-bit integer allows us to heavily optimize the
-            // main part. But anyway, most current (August 2014) browsers can't handle
-            // strings 1 << 28 chars or longer, so:
-            if (str.length * count >= 1 << 28) {
-                throw new RangeError('repeat count must not overflow maximum string size');
-            }
-            var rpt = '';
-            for (; ;) {
-                if ((count & 1) == 1) {
-                    rpt += str;
-                }
-                count >>>= 1;
-                if (count == 0) {
-                    break;
-                }
-                str += str;
-            }
-            return rpt;
-        }
-    }
-
-    Array.from = Array.from || function (arraylike) {
-        return [].slice.call(arraylike);
-    };
-
-    function isString(obj) {
-        return typeof obj === 'string';
-    };
-
-    function isArray(obj) {
-        return Array.isArray(obj);
-    };
-
-    function isObject(obj) {
-        return typeOf(obj) === 'Object';
-    };
-
-    function matchAll(string) {
-        return new RegExp(string, "g");
-    };
-
-    var create = Object.create;
-    var hasOwn = ({}).hasOwnProperty;
-    
     /* 
         rest
                */
@@ -206,6 +31,9 @@
      * Parser base class
      * ractivejs/ractive/blob/master/src/parse/
      */
+     
+    var create = Object.create;
+    var hasOwn = ({}).hasOwnProperty;
 
     var Parser, ParseError, leadingWhitespace = /^\s+/;
 
@@ -950,21 +778,293 @@
      * :Soft functions
      * 
      */
+     
+     /*
+        Initialization
+                        */
 
-    soft.parse = function (str) {
-        return new SoftParser(str).result[0];
+    var SOFT_PREFIX = ':';
+
+    function prefixed(obj) {
+        if (Array.isArray(obj))
+            return obj.map(function (item) {
+                return SOFT_PREFIX + item;
+            });
+        else
+            return SOFT_PREFIX + obj;
     };
+
+    soft.syntax = {
+        self: prefixed(['self', 'this', 'here']),
+        attributes: prefixed(['is', 'of', 'as']),
+        elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
+        void: prefixed('void'),
+        voidElements: ['import', 'include'],
+        helper: prefixed('as')
+    };
+    
+    
+    /*
+        Helper functions
+                           */
+
+    function SoftError(message) {
+        return 'SoftError: ' + message;
+    };
+
+    function htmlify(string) {
+        return string.replace(/&(l|g)t;/g, function (match, direction) {
+            if (direction === 'l')
+                return '<';
+            else
+                return '>';
+        });
+    };
+
+    function htmlescape(str) {
+        return String(str).replace(/[&<>]/g, function (char) {
+            return ({
+                '<': '&lt;',
+                '>': '&gt;',
+                '&': '&amp;'
+            })[char];
+        });
+
+    };
+
+    function typeOf(obj) {
+        return Object.prototype.toString.call(obj)
+            .replace(/\[object |\]/g, '');
+    };
+
+    function deepEscape(template) {
+
+        switch (typeOf(template)) {
+            case 'Array':
+                template = template.map(deepEscape);
+                break;
+            case 'Object':
+                Object.keys(template).forEach(function (item) {
+                    template[item] = deepEscape(template[item]);
+                });
+                break;
+            case 'String':
+                template = htmlescape(template);
+                break;
+        }
+
+        return template;
+
+    };
+
+    function noop(x) { return x };
+
+    if (!Object.assign) {
+        Object.defineProperty(Object, 'assign', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: function (target) {
+                if (target === undefined || target === null) {
+                    throw new TypeError('Cannot convert first argument to object');
+                }
+
+                var to = Object(target);
+                for (var i = 1; i < arguments.length; i++) {
+                    var nextSource = arguments[i];
+                    if (nextSource === undefined || nextSource === null) {
+                        continue;
+                    }
+                    nextSource = Object(nextSource);
+
+                    var keysArray = Object.keys(Object(nextSource));
+                    for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+                        var nextKey = keysArray[nextIndex];
+                        var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+                        if (desc !== undefined && desc.enumerable) {
+                            to[nextKey] = nextSource[nextKey];
+                        }
+                    }
+                }
+                return to;
+            }
+        });
+    };
+
+    if (!String.prototype.repeat) {
+        String.prototype.repeat = function (count) {
+            if (this == null) {
+                throw new TypeError('can\'t convert ' + this + ' to object');
+            }
+            var str = '' + this;
+            count = +count;
+            if (count != count) {
+                count = 0;
+            }
+            if (count < 0) {
+                throw new RangeError('repeat count must be non-negative');
+            }
+            if (count == Infinity) {
+                throw new RangeError('repeat count must be less than infinity');
+            }
+            count = Math.floor(count);
+            if (str.length == 0 || count == 0) {
+                return '';
+            }
+            // Ensuring count is a 31-bit integer allows us to heavily optimize the
+            // main part. But anyway, most current (August 2014) browsers can't handle
+            // strings 1 << 28 chars or longer, so:
+            if (str.length * count >= 1 << 28) {
+                throw new RangeError('repeat count must not overflow maximum string size');
+            }
+            var rpt = '';
+            for (; ;) {
+                if ((count & 1) == 1) {
+                    rpt += str;
+                }
+                count >>>= 1;
+                if (count == 0) {
+                    break;
+                }
+                str += str;
+            }
+            return rpt;
+        }
+    }
+
+    Array.from = Array.from || function (arraylike) {
+        return [].slice.call(arraylike);
+    };
+
+    function isString(obj) {
+        return typeof obj === 'string';
+    };
+
+    function isArray(obj) {
+        return Array.isArray(obj);
+    };
+
+    function isObject(obj) {
+        return typeOf(obj) === 'Object';
+    };
+
+    function matchAll(string) {
+        return new RegExp(string, "g");
+    };
+    
+    function has(obj, item) {
+        return ~obj.indexOf(item);
+    }
+    
+    function filterElements(tokenlist) {
+        return tokenlist.filter(function(token) {
+            return token.t === type('ELEMENT');
+        });
+    }
+    
+    
+    /* 
+        Rest
+               */
+    
+     
+    var attrActions = {};
+    
+    attrActions[prefixed('is')] =
+    attrActions[prefixed('of')] = function (value) { return `{{${value}}}` }
+    
+    attrActions[prefixed('as')] = function (value) { return `[[${value}]]` }
+
+    function compileAttributes(element) {
+        if (isArray(element.f))
+            element.f = compile(element.f);
+        element.f = element.f || [];
+        
+        var innerElements = filterElements(element.f).filter(function(elem) {
+            return ~soft.syntax.self.indexOf(SOFT_PREFIX + elem.e);  
+        });
+        
+        for (var attr in element.a) {
+            if ( has(soft.syntax.attributes, attr) ) {
+                
+                var value = element.a[attr];
+                var acted = attrActions[attr](value);
+                
+                soft.syntax.self.forEach(function(self) {
+                   for (var _attr in element.a) {
+                       if (element.a[_attr] === self)
+                           element.a[_attr] = acted;
+                   }
+                });
+                
+                if (innerElements.length) {
+                    innerElements.forEach(function(elem) {
+                        element.f[element.f.indexOf(elem)] = acted;
+                    });
+                } else {
+                    element.f.push(acted);
+                }
+                
+                delete element.a[attr];
+                
+            }
+        }
+        
+        return element;
+    }
+
+    function compileElement(element) {
+
+        element = compileAttributes(element);
+
+        return element;
+    }
+
+    function compile(parsed) {
+        var elements = filterElements(parsed);
+
+        elements = elements.map(compileElement);
+        elements.forEach(function (element) {
+            parsed[parsed.indexOf(element)] = element;
+        });
+        
+        return parsed;
+    }
+
+    function integrate(parsed, template) {
+        return parsed;
+    }
 
     var to = {};
-    
+
     to.element = function (token) {
-        return `<${token.e}>`;
+        var name = token.e;
+        var attrs = '';
+
+        var isVoid;
+
+        if (name && token.a)
+            isVoid = soft.syntax.void in token.a || has(soft.syntax.voidElements, name);
+
+        for (var attr in token.a) {
+            if ( !has(soft.syntax.attributes,attr) && !(attr === soft.syntax.void) )
+                attrs += ` ${attr}="${token.a[attr]}"`;
+        }
+
+        var content = '';
+
+        if (token.f)
+            content = to.document(token.f);
+
+        content += `<${name}>`;
+
+        return `<${name + attrs}>${isVoid ? '' : content}`;
     };
-    
-    to.document = function(parsed) {
+
+    to.document = function (parsed) {
         return parsed.map(function (token) {
             if (typeof token === 'string') {
-                return token;
+                return htmlescape(token);
             } else if (typeof token === 'object') {
                 switch (token.t) {
                     case type('ELEMENT'):
@@ -975,13 +1075,18 @@
                         return `<!DOCTYPE${token.a}>`;
                 }
             }
-            
+
         }).join('');
     };
 
-    soft._render = function (parsed, template) {
+    function render(parsed, template) {
+        parsed = integrate(compile(parsed), template);
         return to.document(parsed);
     }
+
+    soft.parse = function (str) {
+        return new SoftParser(str).result[0];
+    };
 
     var CACHE = {};
 
@@ -989,7 +1094,7 @@
         var parsed = CACHE[str] || (CACHE[str] = soft.parse(str));
 
         return function (template) {
-            return soft._render(parsed, template);
+            return render(parsed, template);
         }
     }
 

@@ -28,9 +28,9 @@ starts an else block
 <fi>
 ends an if block
 
-<:self>
-<:this>
-<:here>
+<self>
+<this>
+<here>
 placeholder element, used to provide a place to put the template content, when there is other content before or after
 ```
 
