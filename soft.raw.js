@@ -795,13 +795,15 @@
     };
 
     soft.syntax = {
-        self: prefixed(['self', 'this', 'here']),
+        self: ['self', 'this', 'here'],
         attributes: prefixed(['is', 'of', 'as']),
         elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
         void: prefixed('void'),
         voidElements: ['import', 'include'],
         helper: prefixed('as')
     };
+    
+    var softEntityPattern = new RegExp(`&(${soft.syntax.self.join('|')})(\[[^\]]+?\]|\.[^;]+?)?;`);
     
     
     /*
@@ -812,17 +814,18 @@
         return 'SoftError: ' + message;
     };
 
-    function htmlify(string) {
-        return string.replace(/&(l|g)t;/g, function (match, direction) {
-            if (direction === 'l')
-                return '<';
-            else
-                return '>';
+    function htmlify(str) {
+        return str.replace(/&(lt|gt|amp);/g, function (match, entity) {
+            return ({
+                'lt': '<',
+                'gt': '>',
+                'amp': '&'
+            })[entity];
         });
     };
 
     function htmlescape(str) {
-        return String(str).replace(/[&<>]/g, function (char) {
+        return str.replace(/[&<>]/g, function (char) {
             return ({
                 '<': '&lt;',
                 '>': '&gt;',
@@ -962,6 +965,14 @@
         });
     }
     
+    function onlyTruthy(x) { return !!x }
+    
+    function flatten(arr) {
+        return arr.reduce(function(a,b) {
+            return a.concat( isArray(b)? flatten(b) : b );
+        }, []);
+    };
+    
     
     /* 
         Rest
@@ -974,15 +985,23 @@
     attrActions[prefixed('of')] = function (value) { return `{{${value}}}` }
     
     attrActions[prefixed('as')] = function (value) { return `[[${value}]]` }
+    
+    function filterEntities(f) {
+        return flatten(f.map(function(i) {
+            if (isObject(i))
+                return filterEntities(i.f);
+            
+            return softEntityPattern.test(i) && i;
+        }).filter(onlyTruthy));
+    }
 
     function compileAttributes(element) {
         if (isArray(element.f))
             element.f = compile(element.f);
+        console.log(element.f);
         element.f = element.f || [];
         
-        var innerElements = filterElements(element.f).filter(function(elem) {
-            return ~soft.syntax.self.indexOf(SOFT_PREFIX + elem.e);  
-        });
+        var softEntities = filterEntities(element.f);
         
         for (var attr in element.a) {
             if ( has(soft.syntax.attributes, attr) ) {
@@ -994,16 +1013,21 @@
                    for (var _attr in element.a) {
                        if (element.a[_attr] === self)
                            element.a[_attr] = acted;
+                       else if (softEntityPattern.test(element.a[_attr]))
+                           element.a[_attr] = acted;
                    }
                 });
                 
-                if (innerElements.length) {
-                    innerElements.forEach(function(elem) {
-                        element.f[element.f.indexOf(elem)] = acted;
+                if (softEntities.length) {
+                    softEntities.forEach(function(ent) {
+                            
+                        element.f[element.f.indexOf(ent)] = acted;
                     });
                 } else {
                     element.f.push(acted);
                 }
+                
+                
                 
                 delete element.a[attr];
                 
@@ -1056,7 +1080,7 @@
         if (token.f)
             content = to.document(token.f);
 
-        content += `<${name}>`;
+        content += `</${name}>`;
 
         return `<${name + attrs}>${isVoid ? '' : content}`;
     };

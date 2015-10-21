@@ -8,7 +8,7 @@ Soft is an extensible templating engine that aims to be as close to plain HTML a
 
 #### syntax
 
-Soft uses two basic types of expression: elements and attributes, which can be plugged in to an existing HTML document, and follows the same syntax.
+Soft uses three basic types of expression: elements, attributes, and entities which can be plugged in to an existing HTML document with minimal visual change, and follow the same syntax.
 
 #### elements
 
@@ -27,11 +27,6 @@ starts an else block
 <endif>
 <fi>
 ends an if block
-
-<self>
-<this>
-<here>
-placeholder element, used to provide a place to put the template content, when there is other content before or after
 ```
 
 #### attributes
@@ -47,10 +42,16 @@ iterate over `somearray`, creating a new element for each item
 use the `currency` helper on the content from the template matching this element
 
 <element :void>
-do not fill in this element's content (used for void elements such as <img> where you only want a `src` attribute to be filled in)
+do not fill in this element's content (used for void elements such as <img> where you only want attributes to be filled in)
+```
 
-<element attr=":self|:this|:here">
-if an element's attribute is any of these, the template content for that item will replace it.
+#### entities
+
+```html
+&self;
+&here;
+&this;
+wherever these appear in the element (attributes or content), they will be replaced with the current item of the template ( à la Mustache {{.}} )
 ```
 
 
@@ -100,11 +101,11 @@ these:
 ```
 
 ```html
-<li :of="array">item <:self></li>
+<li :of="array">item &self;</li>
 ```
 
 ```html
-<li :of="objects">(<:self bar>, <:self foo>)</li>
+<li :of="objects">(&self.bar;, &self[foo];)</li>
 ```
 
 become:
