@@ -1040,7 +1040,7 @@
         key = key || '';
         
         if (key[0] === '[')
-            key = '.' + key.substr(1, key.length-1);
+            key = '.' + key.substr(1, key.length);
             
         return `{{${self + key}}}`
     }
@@ -1067,9 +1067,57 @@
         
         return parsed;
     }
+    
+    var softItemPattern = /{{((?:(?!}}).)+)}}/g;
+    var softHelperPattern = /\[\[((?:(?!]]).)+)\]\]/g;
+    
+    function integrateAttributes(attrs, template) {
+        
+        for (var name in attrs) {
+            var value = attrs[name]+'';
+            
+            var item = softItemPattern.exec(value);
+            
+            if (item)
+                item = template[ item[1] ];
+                
+            if ( isString(item) )
+                attrs[name] = item; 
+        }
+        
+        return attrs;
+    }
+    
+    function integrateText(text, template) {
+        return text;
+    }
+    
+    function integrateElement(elem) {
+        console.log(elem);
+        return elem;
+    }
 
     function integrate(parsed, template) {
-        return parsed
+        if ( isObject(parsed) ) {
+            return integrateElement(parsed);
+        }
+        
+        return parsed.map(function(token) {
+            
+            if ( isString(token) )
+                return integrateText(token, template);
+            
+            if ( token.t && token.t !== type('ELEMENT') )
+                return token;
+            
+            if (token.a)
+                token.a = integrateAttributes(token.a, template);
+                
+             if (token.f)
+                token = integrate(token, template);
+            
+            return token; 
+        });
     }
 
     var to = {};

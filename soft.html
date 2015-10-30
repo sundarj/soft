@@ -38,9 +38,9 @@
             var render = soft.compile(window.tpl.textContent);
             console.timeEnd('.compile()');
             
-            console.time('render()')
-            console.log(render());
-            console.timeEnd('render()');
+            console.time( 'render(template)' )
+            console.log( render(template) );
+            console.timeEnd( 'render(template)' );
             
             console.groupEnd('soft');
         };
