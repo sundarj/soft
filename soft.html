@@ -30,17 +30,27 @@
         });*/
         
         onload = function() {
-            /*var render = soft.compile(document.body.innerHTML);
-            document.body.innerHTML = render(template);*/
-            console.log(soft.render(document.body.innerHTML));
+            console.group('soft');
+            
+            console.log(window.tpl.textContent);
+            
+            console.time('.compile()');
+            var render = soft.compile(window.tpl.textContent);
+            console.timeEnd('.compile()');
+            
+            console.time('render()')
+            console.log(render());
+            console.timeEnd('render()');
+            
+            console.groupEnd('soft');
         };
     </script>
 </head>
 <body>
+<script type="text/html" id="tpl">
     <!-- todo:
-         https://docs.djangoproject.com/en/1.7/topics/templates/#template-inheritance
-         http://paularmstrong.github.io/swig/docs/
-         http://docs.ractivejs.org/latest/ractive-parse
+        https://docs.djangoproject.com/en/1.7/topics/templates/#template-inheritance
+        http://paularmstrong.github.io/swig/docs/
     -->
     
     <h1 :is="title"></h1>
@@ -61,6 +71,7 @@
 
     <pre class="license"><import src="LICENSE"></pre>
     <pre class="readme"><include src="README.md" escaped></pre>
+</script>
 </body>
 
 </html>
