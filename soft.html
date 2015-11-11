@@ -34,9 +34,9 @@
             
             console.log(window.tpl.textContent);
             
-            console.time('.compile()');
+            console.time( '.compile()' );
             var render = soft.compile(window.tpl.textContent);
-            console.timeEnd('.compile()');
+            console.timeEnd( '.compile()' );
             
             console.time( 'render(template)' )
             console.log( render(template) );
