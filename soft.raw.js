@@ -883,7 +883,7 @@
                 break;
             }
         }
-    }
+    };
     
     function map(arr, fn) {
         var index = -1,
@@ -895,7 +895,7 @@
         }
         
         return result;
-    }
+    };
     
     function any(arr, fn) {
         var index = -1,
@@ -908,11 +908,11 @@
         }
         
         return false;
-    }
+    };
     
     function inspect(obj) {
         console.log( JSON.stringify(obj, null, 4) );
-    }
+    };
     
     
     /* 
@@ -957,7 +957,7 @@
     
     function compile(parsed) {
         return map(parsed, function(tok) {
-           if ( !( tok.t === type('ELEMENT') ) )
+           if ( !(tok.t === type('ELEMENT')) )
                return tok;
                
            if (tok.f)
@@ -967,12 +967,14 @@
         });
     }
     
+    soft._compile = compile;
+    
     function interpolate(f, template) {
         return map(f, function(t) {
-           if ( t.f ) 
+           if (t.f) 
                t.f = interpolate(t.f, template);
            
-           if ( typeof t === 'function' )
+           if (typeof t === 'function')
                return t(template);
                
            return t;
@@ -981,7 +983,7 @@
 
     function integrate(parsed, template) {
         return map(parsed, function(tok) {
-           if ( !tok.f )
+           if (!tok.f)
                return tok;
                
            tok.f = interpolate(tok.f, template);
@@ -990,7 +992,7 @@
         });
     }
 
-    var to = {};
+    var to = soft.to = {};
 
     to.element = function (token) {
         var name = token.e;
@@ -1034,9 +1036,9 @@
         }).join('');
     };
 
-    function render(parsed, template) {
-        parsed = integrate(compile(parsed), template);
-        return to.document(parsed);
+    function render(compiled, template) {
+        compiled = integrate(compiled, template);
+        return to.document(compiled);
     }
 
     soft.parse = function (str) {
@@ -1047,9 +1049,10 @@
 
     soft.compile = function (str) {
         var parsed = CACHE[str] || (CACHE[str] = soft.parse(str));
+        var compiled = compile(parsed);
 
         return function (template) {
-            return render(parsed, template);
+            return render(compiled, template);
         }
     }
 
