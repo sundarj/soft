@@ -21,19 +21,149 @@
     } else {
         root.soft = soft;
     }
-    
-    /* 
-        rest
-               */
+
+
+
+    var SOFT_PREFIX = ':';
+
+    function prefixed(obj) {
+        if (Array.isArray(obj))
+            return map(obj, function (item) {
+                return SOFT_PREFIX + item;
+            });
+        else
+            return SOFT_PREFIX + obj;
+    };
+
+    soft.syntax = {
+        self: ['self', 'this', 'here'],
+        attributes: prefixed(['is', 'of', 'as']),
+        elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
+        void: prefixed('void'),
+        voidElements: ['import', 'include'],
+        helper: prefixed('as')
+    };
+
+
+    function SoftError(message) {
+        return 'SoftError: ' + message;
+    };
+
+    function htmlify(str) {
+        return str.replace(/&(lt|gt|amp);/g, function (match, entity) {
+            return ({
+                'lt': '<',
+                'gt': '>',
+                'amp': '&'
+            })[entity];
+        });
+    };
+
+    function htmlescape(str) {
+        return str.replace(/[&<>]/g, function (char) {
+            return ({
+                '<': '&lt;',
+                '>': '&gt;',
+                '&': '&amp;'
+            })[char];
+        });
+
+    };
+
+    function noop(x) { return x };
+
+    Array.from = Array.from || function (arraylike) {
+        return [].slice.call(arraylike);
+    };
+
+    function isString(obj) {
+        return typeof obj === 'string';
+    };
+
+    var isArray = Array.isArray;
+
+    function isObject(obj) {
+        return obj.constructor === Object;
+    };
+
+    function matchAll(string) {
+        return new RegExp(string, "g");
+    };
+
+    function contains(array, value) {
+        for (var i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
+            if (array[i] === value) return true;
+            else if (array[(l - i)] === value) return true;
+        }
+        return false;
+    }
+
+    function has(obj, key) {
+        return obj[key] != void(0);
+    }
+
+    function filterElements(tokenlist) {
+        return tokenlist.filter(function (token) {
+            return token.t === type('ELEMENT');
+        });
+    }
+
+    function onlyTruthy(x) { return !!x }
+
+    function flatten(arr) {
+        return arr.reduce(function (a, b) {
+            return a.concat(isArray(b) ? flatten(b) : b);
+        }, []);
+    };
+
+    function each(arr, fn) {
+        var index = -1,
+            length = arr.length;
+
+        while (++index < length) {
+            if (fn(arr[index], index, arr) === false) {
+                break;
+            }
+        }
+    };
+
+    function map(arr, fn) {
+        var index = -1,
+            length = arr.length,
+            result = Array(length);
+
+        while (++index < length) {
+            result[index] = fn(arr[index], index, arr);
+        }
+
+        return result;
+    };
+
+    function any(arr, fn) {
+        var index = -1,
+            length = arr.length;
+
+        while (++index < length) {
+            if ( fn(arr[index]) ) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function inspect(obj) {
+        console.log(JSON.stringify(obj, null, 4));
+    };
                
     
     /**
      * Parser base class
      * ractivejs/ractive/blob/master/src/parse/
      */
-     
+
     var create = Object.create;
-    var hasOwn = ({}).hasOwnProperty;
+    var hasOwn = Object.prototype.hasOwnProperty;
 
     var Parser, ParseError, leadingWhitespace = /^\s+/;
 
@@ -599,7 +729,12 @@
         while (attribute = readAttribute(parser)) {
             if (attribute.name) {
                 if (!element.a) element.a = {};
-                element.a[attribute.name] = attribute.value || (attribute.value === '' ? '' : 0);
+
+                if ( contains(soft.syntax.attributes, attribute.name) ) {
+                    
+                } else {
+                    element.a[attribute.name] = attribute.value || (attribute.value === ''? '' : 0);
+                }
             }
 
             parser.allowWhitespace();
@@ -773,222 +908,76 @@
 
     });
     
-    
-    /**
-     * :Soft functions
-     * 
-     */
-     
-     /*
-        Initialization
-                        */
 
-    var SOFT_PREFIX = ':';
-
-    function prefixed(obj) {
-        if (Array.isArray(obj))
-            return map(obj, function (item) {
-                return SOFT_PREFIX + item;
-            });
-        else
-            return SOFT_PREFIX + obj;
-    };
-
-    soft.syntax = {
-        self: ['self', 'this', 'here'],
-        attributes: prefixed(['is', 'of', 'as']),
-        elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-        void: prefixed('void'),
-        voidElements: ['import', 'include'],
-        helper: prefixed('as')
-    };
-    
-    
-    /*
-        Helper functions
-                           */
-
-    function SoftError(message) {
-        return 'SoftError: ' + message;
-    };
-
-    function htmlify(str) {
-        return str.replace(/&(lt|gt|amp);/g, function (match, entity) {
-            return ({
-                'lt': '<',
-                'gt': '>',
-                'amp': '&'
-            })[entity];
-        });
-    };
-
-    function htmlescape(str) {
-        return str.replace(/[&<>]/g, function (char) {
-            return ({
-                '<': '&lt;',
-                '>': '&gt;',
-                '&': '&amp;'
-            })[char];
-        });
-
-    };
-
-    function noop(x) { return x };
-
-    Array.from = Array.from || function (arraylike) {
-        return [].slice.call(arraylike);
-    };
-
-    function isString(obj) {
-        return typeof obj === 'string';
-    };
-
-    var isArray = Array.isArray;
-
-    function isObject(obj) {
-        return obj.constructor === Object;
-    };
-
-    function matchAll(string) {
-        return new RegExp(string, "g");
-    };
-    
-    function has(obj, item) {
-        if ( isObject(obj) )
-            return item in obj;
-            
-        return ~obj.indexOf(item);
-    }
-    
-    function filterElements(tokenlist) {
-        return tokenlist.filter(function(token) {
-            return token.t === type('ELEMENT');
-        });
-    }
-    
-    function onlyTruthy(x) { return !!x }
-    
-    function flatten(arr) {
-        return arr.reduce(function(a,b) {
-            return a.concat( isArray(b)? flatten(b) : b );
-        }, []);
-    };
-    
-    function each(arr, fn) {
-        var index = -1,
-        length = arr.length;
-
-        while (++index < length) {
-            if ( fn(arr[index], index, arr) === false ) {
-                break;
-            }
-        }
-    };
-    
-    function map(arr, fn) {
-        var index = -1,
-        length = arr.length,
-        result = Array(length);
-    
-        while (++index < length) {
-            result[index] = fn(arr[index], index, arr);
-        }
-        
-        return result;
-    };
-    
-    function any(arr, fn) {
-        var index = -1,
-        length = arr.length;
-
-        while (++index < length) {
-            if ( fn(arr[index]) ) {
-                return true;
-            }
-        }
-        
-        return false;
-    };
-    
-    function inspect(obj) {
-        console.log( JSON.stringify(obj, null, 4) );
-    };
-    
-    
-    /* 
-        Rest
-               */
-    
+   
     //var softEntityPattern = new RegExp(`&(${soft.syntax.self.join('|')})(\[[^\]]+?\]|\.[^;]+?)?;`);
-    var softAttributePattern = new RegExp( soft.syntax.attributes.join('|') );
-    
-    function t(key) {
-        return function(template) {
-            return template[key];
+    var softAttributePattern = new RegExp(soft.syntax.attributes.join('|'));
+    /*    
+        function t(key) {
+            return function(template) {
+                return template[key];
+            }
         }
-    }
-    
-    function compileAttribute(hasContent, elt, attr) {
-        if (hasContent)
-            ;
-        else
-            elt.f = [ t( elt.a[attr] ) ];
-    }
-    
-    function compileAttributes(elt) {
-        var hasContent = !!elt.f;
         
-        for (var attr in elt.a) {
-            if ( softAttributePattern.test(attr) )
-                compileAttribute(hasContent, elt, attr);
+        function compileAttribute(hasContent, elt, attr) {
+            if (hasContent)
+                ;
+            else
+                elt.f = [ t( elt.a[attr] ) ];
         }
-    }
-    
-    function compileElement(elt) {
-        //inspect(elt);
         
-        if (elt.a)
-            compileAttributes(elt);
+        function compileAttributes(elt) {
+            var hasContent = !!elt.f;
             
-        console.log(elt.f);
+            for (var attr in elt.a) {
+                if ( softAttributePattern.test(attr) )
+                    compileAttribute(hasContent, elt, attr);
+            }
+        }
         
-        return elt;
-    }
-    
-    function compile(parsed) {
-        return map(parsed, function(tok) {
-           if ( !(tok.t === type('ELEMENT')) )
-               return tok;
+        function compileElement(elt) {
+            //inspect(elt);
+            
+            if (elt.a)
+                compileAttributes(elt);
+                
+            console.log(elt.f);
+            
+            return elt;
+        }
+        
+        function compile(parsed) {
+            return map(parsed, function(tok) {
+               if ( !(tok.t === type('ELEMENT')) )
+                   return tok;
+                   
+               if (tok.f)
+                   tok.f = compile(tok.f);
                
-           if (tok.f)
-               tok.f = compile(tok.f);
-           
-           return compileElement(tok); 
-        });
-    }
-    
-    soft._compile = compile;
-    
+               return compileElement(tok); 
+            });
+        } */
+
     function interpolate(f, template) {
-        return map(f, function(t) {
-           if (t.f) 
-               t.f = interpolate(t.f, template);
-           
-           if (typeof t === 'function')
-               return t(template);
-               
-           return t;
+        return map(f, function (t) {
+            if (t.f)
+                t.f = interpolate(t.f, template);
+
+            if (typeof t === 'function')
+                return t(template);
+
+            return t;
         });
     }
 
     function integrate(parsed, template) {
-        return map(parsed, function(tok) {
-           if (!tok.f)
-               return tok;
-               
-           tok.f = interpolate(tok.f, template);
-           
-           return tok;
+        return map(parsed, function (tok) {
+            if (!tok.f)
+                return tok;
+
+            tok.f = interpolate(tok.f, template);
+
+            return tok;
         });
     }
 
@@ -1001,10 +990,10 @@
         var isVoid;
 
         if (name && token.a)
-            isVoid = soft.syntax.void in token.a || has(soft.syntax.voidElements, name);
+            isVoid = soft.syntax.void in token.a || contains(soft.syntax.voidElements, name);
 
         for (var attr in token.a) {
-            if ( !has(soft.syntax.attributes,attr) && !(attr === soft.syntax.void) )
+            if ( !contains(soft.syntax.attributes, attr) && !(attr === soft.syntax.void) )
                 attrs += ` ${attr}="${token.a[attr]}"`;
         }
 
@@ -1049,10 +1038,10 @@
 
     soft.compile = function (str) {
         var parsed = CACHE[str] || (CACHE[str] = soft.parse(str));
-        var compiled = compile(parsed);
+        //var compiled = compile(parsed);
 
         return function (template) {
-            return render(compiled, template);
+            return render(parsed, template);
         }
     }
 
