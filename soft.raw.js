@@ -4,11 +4,11 @@
 	
     // UMD from underscorejs.org
 
-    var root = typeof self == 'object' && self.self === self && self ||
+    let root = typeof self == 'object' && self.self === self && self ||
         typeof global == 'object' && global.global === global && global ||
         this;
 
-    var soft = function (obj) {
+    let soft = function (obj) {
         if (obj instanceof soft) return obj;
         if (!(this instanceof soft)) return new soft;
     }
@@ -24,7 +24,7 @@
 
 
 
-    var SOFT_PREFIX = ':';
+    const SOFT_PREFIX = ':';
 
     function prefixed(obj) {
         if (Array.isArray(obj))
@@ -80,7 +80,7 @@
         return typeof obj === 'string';
     };
 
-    var isArray = Array.isArray;
+    let isArray = Array.isArray;
 
     function isObject(obj) {
         return obj.constructor === Object;
@@ -91,7 +91,7 @@
     };
 
     function contains(array, value) {
-        for (var i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
+        for (let i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
             if (array[i] === value) return true;
             else if (array[(l - i)] === value) return true;
         }
@@ -117,7 +117,7 @@
     };
 
     function each(arr, fn) {
-        var index = -1,
+        let index = -1,
             length = arr.length;
 
         while (++index < length) {
@@ -128,7 +128,7 @@
     };
 
     function map(arr, fn) {
-        var index = -1,
+        let index = -1,
             length = arr.length,
             result = Array(length);
 
@@ -140,7 +140,7 @@
     };
 
     function any(arr, fn) {
-        var index = -1,
+        let index = -1,
             length = arr.length;
 
         while (++index < length) {
@@ -162,10 +162,10 @@
      * ractivejs/ractive/blob/master/src/parse/
      */
 
-    var create = Object.create;
-    var hasOwn = Object.prototype.hasOwnProperty;
+    let create = Object.create;
+    let hasOwn = Object.prototype.hasOwnProperty;
 
-    var Parser, ParseError, leadingWhitespace = /^\s+/;
+    let Parser, ParseError, leadingWhitespace = /^\s+/;
 
     ParseError = function (message) {
         this.name = 'ParseError';
@@ -180,7 +180,7 @@
     ParseError.prototype = Error.prototype;
 
     Parser = function (str, options) {
-        var items, item, lineStart = 0;
+        let items, item, lineStart = 0;
 
         this.str = str;
         this.options = options || {};
@@ -188,7 +188,7 @@
 
         this.lines = this.str.split('\n');
         this.lineEnds = map(this.lines, line => {
-            var lineEnd = lineStart + line.length + 1; // +1 for the newline
+            let lineEnd = lineStart + line.length + 1; // +1 for the newline
     
             lineStart = lineEnd;
             return lineEnd;
@@ -209,7 +209,7 @@
 
     Parser.prototype = {
         read: function (converters) {
-            var pos, i, len, item;
+            let pos, i, len, item;
 
             if (!converters) converters = this.converters;
 
@@ -228,7 +228,7 @@
         },
 
         getLinePos: function (char) {
-            var lineNum = 0, lineStart = 0, columnNum;
+            let lineNum = 0, lineStart = 0, columnNum;
 
             while (char >= this.lineEnds[lineNum]) {
                 lineStart = this.lineEnds[lineNum];
@@ -240,13 +240,13 @@
         },
 
         error: function (message) {
-            var pos = this.getLinePos(this.pos);
-            var lineNum = pos[0];
-            var columnNum = pos[1];
+            let pos = this.getLinePos(this.pos);
+            let lineNum = pos[0];
+            let columnNum = pos[1];
 
-            var line = this.lines[pos[0] - 1];
-            var numTabs = 0;
-            var annotation = line.replace(/\t/g, (match, char) => {
+            let line = this.lines[pos[0] - 1];
+            let numTabs = 0;
+            let annotation = line.replace(/\t/g, (match, char) => {
                 if (char < pos[1]) {
                     numTabs += 1;
                 }
@@ -254,7 +254,7 @@
                 return '  ';
             }) + '\n' + new Array(pos[1] + numTabs).join(' ') + '^----';
 
-            var error = new ParseError(`${message} at line ${lineNum} character ${columnNum}:\n${annotation}`);
+            let error = new ParseError(`${message} at line ${lineNum} character ${columnNum}:\n${annotation}`);
 
             error.line = pos[0];
             error.character = pos[1];
@@ -271,7 +271,7 @@
         },
 
         matchPattern: function (pattern) {
-            var match;
+            let match;
 
             if (match = pattern.exec(this.remaining())) {
                 this.pos += match[0].length;
@@ -293,7 +293,7 @@
     };
 
     Parser.extend = function (proto) {
-        var Parent = this, Child, key;
+        let Parent = this, Child, key;
 
         Child = function (str, options) {
             Parser.call(this, str, options);
@@ -312,7 +312,7 @@
     };
 
 
-    var types = ['',
+    let types = ['',
         'TEXT', 'ELEMENT', 'COMMENT',
         'ATTRIBUTE', 'CLOSING_TAG', 'DOCTYPE',
     ];
@@ -320,10 +320,10 @@
     function type(token) { return types.indexOf(token) }
 
 
-    var OPEN_COMMENT = '<!--',
+    let OPEN_COMMENT = '<!--',
         CLOSE_COMMENT = '-->';
 
-    var booleanAttributes, voidElementNames, htmlEntities, controlCharacters, entityPattern;
+    let booleanAttributes, voidElementNames, htmlEntities, controlCharacters, entityPattern;
     
     // https://github.com/kangax/html-minifier/issues/63#issuecomment-37763316
     booleanAttributes = /^(allowFullscreen|async|autofocus|autoplay|checked|compact|controls|declare|default|defaultChecked|defaultMuted|defaultSelected|defer|disabled|enabled|formNoValidate|hidden|indeterminate|inert|isMap|itemScope|loop|multiple|muted|noHref|noResize|noShade|noValidate|noWrap|open|pauseOnExit|readOnly|required|reversed|scoped|seamless|selected|sortable|translate|trueSpeed|typeMustMatch|visible|escaped|:void)$/i;
@@ -335,7 +335,7 @@
 
     function decodeCharacterReferences(html) {
         return html.replace(entityPattern, function (match, entity) {
-            var code;
+            let code;
     
             // Handle named entities
             if (entity[0] !== '#') {
@@ -398,10 +398,10 @@
         return 65533;
     }
 
-    var closingTagPattern = /^([a-zA-Z]{1,}:?[a-zA-Z0-9\-]*)\s*\>/;
+    let closingTagPattern = /^([a-zA-Z]{1,}:?[a-zA-Z0-9\-]*)\s*\>/;
 
     function readClosingTag(parser) {
-        var start, tag;
+        let start, tag;
 
         start = parser.pos;
     
@@ -427,11 +427,11 @@
         parser.error('Illegal closing tag');
     }
 
-    var attributeNamePattern = /^[^\s"'>\/=]+/,
+    let attributeNamePattern = /^[^\s"'>\/=]+/,
         unquotedAttributeValueTextPattern = /^[^\s"'=<>`]+/;
 
     function getLowestIndex(haystack, needles) {
-        var i, index, lowest;
+        let i, index, lowest;
 
         i = needles.length;
         while (i--) {
@@ -455,7 +455,7 @@
     }
 
     function readAttribute(parser) {
-        var attr, name, value;
+        let attr, name, value;
 
         parser.allowWhitespace();
 
@@ -475,7 +475,7 @@
     }
 
     function readAttributeValue(parser) {
-        var start, valueStart, startDepth, value;
+        let start, valueStart, startDepth, value;
 
         start = parser.pos;
     
@@ -521,7 +521,7 @@
     }
 
     function readUnquotedAttributeValueToken(parser) {
-        var start, text, haystack, needles, index;
+        let start, text, haystack, needles, index;
 
         start = parser.pos;
 
@@ -543,7 +543,7 @@
     }
 
     function readUnquotedAttributeValue(parser) {
-        var tokens, token;
+        let tokens, token;
 
         parser.inAttribute = true;
 
@@ -564,7 +564,7 @@
     }
 
     function readQuotedAttributeValue(parser, quoteMark) {
-        var start, tokens, token;
+        let start, tokens, token;
 
         start = parser.pos;
 
@@ -593,7 +593,7 @@
     }
 
     function readQuotedStringToken(parser, quoteMark) {
-        var start, index, haystack, needles;
+        let start, index, haystack, needles;
 
         start = parser.pos;
         haystack = parser.remaining();
@@ -618,7 +618,7 @@
 
 
     function readHTMLComment(parser) {
-        var start, content, remaining, endIndex, comment;
+        let start, content, remaining, endIndex, comment;
 
         start = parser.pos;
 
@@ -644,7 +644,7 @@
         return comment;
     }
 
-    var tagNamePattern = /^[a-zA-Z]{1,}:?[a-zA-Z0-9\-]*/,
+    let tagNamePattern = /^[a-zA-Z]{1,}:?[a-zA-Z0-9\-]*/,
         validTagNameFollower = /^[\s\n\/>]/,
         exclude = { exclude: true },
         disallowedContents;
@@ -666,15 +666,50 @@
         td: ['td', 'th', 'tr'],
         th: ['td', 'th', 'tr']
     };
-
+    
+    let softContentAttributes = [':is', ':of'];
+    
+    let softSelf = soft.syntax.self.join('|');
+    let matchDotNotation = '\\.([^;]+)';
+    let matchBracketNotation = '\\[([^\\]]+)\\]';
+    let softEntityBody = matchDotNotation + '|' + matchBracketNotation;
+    
+    // match &self; &here; etc. or &self.foo; &self[bar];
+    let softEntityPattern = new RegExp(
+        `&(${softSelf});|&(?:${softSelf})(?:${softEntityBody})?;`,
+        'g'
+    );
+    
+    function readSoftAttribute(attribute, element) {
+        if (!element.p) element.p = {};
+        
+        var name = attribute.name;
+        var value = attribute.value;
+        
+        if ( contains(softContentAttributes, name) )
+            element.p.is = value;
+        else if ( soft.syntax.helper === name )
+            element.p.as = value;
+    };
+    
+    function readSoftEntity(child) {
+        child = child.replace(softEntityPattern, function(full, name, dotn, sqn) {
+            let key = (dotn || sqn) || name;
+            
+            return key;
+        });
+        
+        return {
+            p: { key: child }
+        };
+    }
+    
     function readElement(parser) {
-        var start,
+        let start,
             element,
             attribute,
             selfClosing,
             children,
-            partials,
-            hasPartials,
             child,
             closed,
             pos,
@@ -731,7 +766,7 @@
                 if (!element.a) element.a = {};
 
                 if ( contains(soft.syntax.attributes, attribute.name) ) {
-                    
+                    readSoftAttribute(attribute, element);
                 } else {
                     element.a[attribute.name] = attribute.value || (attribute.value === ''? '' : 0);
                 }
@@ -753,7 +788,7 @@
             return null;
         }
 
-        var lowerCaseName = element.e.toLowerCase();
+        let lowerCaseName = element.e.toLowerCase();
 
         if (!selfClosing && !voidElementNames.test(element.e)) {
             parser.elementStack.push(lowerCaseName);
@@ -780,7 +815,7 @@
                 else if (closingTag = readClosingTag(parser)) {
                     closed = true;
 
-                    var closingTagName = closingTag.e.toLowerCase();
+                    let closingTagName = closingTag.e.toLowerCase();
     
                     // if this *isn't* the closing tag for the current element...
                     if (closingTagName !== lowerCaseName) {
@@ -789,7 +824,7 @@
     
                         // if it doesn't close a parent tag, error
                         if (!~parser.elementStack.indexOf(closingTagName)) {
-                            var errorMessage = 'Unexpected closing tag';
+                            let errorMessage = 'Unexpected closing tag';
     
                             // add additional help for void elements, since component names
                             // might clash with them
@@ -804,6 +839,9 @@
 
                 else {
                     if (child = parser.read(READERS)) {
+                        if ( isString(child) && softEntityPattern.test(child) )
+                            child = readSoftEntity(child);
+                        
                         children.push(child);
                     } else {
                         closed = true;
@@ -813,10 +851,6 @@
 
             if (children.length) {
                 element.f = children;
-            }
-
-            if (hasPartials) {
-                element.p = partials;
             }
 
             parser.elementStack.pop();
@@ -832,7 +866,7 @@
     }
 
     function canContain(name, remaining) {
-        var match, disallowed;
+        let match, disallowed;
 
         match = /^<([a-zA-Z][a-zA-Z0-9]*)/.exec(remaining);
         disallowed = disallowedContents[name];
@@ -845,7 +879,7 @@
     }
 
     function readText(parser) {
-        var index, remaining, disallowed, barrier;
+        let index, remaining, disallowed, barrier;
 
         remaining = parser.remaining();
 
@@ -886,10 +920,10 @@
     var READERS = [readHTMLComment, readElement, readText];
 
     function readDocument(parser) {
-        var fragment = [];
+        let fragment = [];
 
         while (parser.pos < parser.str.length) {
-            var item;
+            let item;
 
             if (item = parser.read(READERS));
             fragment.push(item);
@@ -898,7 +932,7 @@
         return fragment
     }
 
-    var SoftParser = Parser.extend({
+    let SoftParser = Parser.extend({
 
         init: function () {
             this.elementStack = [];
@@ -908,10 +942,6 @@
 
     });
     
-
-   
-    //var softEntityPattern = new RegExp(`&(${soft.syntax.self.join('|')})(\[[^\]]+?\]|\.[^;]+?)?;`);
-    var softAttributePattern = new RegExp(soft.syntax.attributes.join('|'));
     /*    
         function t(key) {
             return function(template) {
@@ -927,9 +957,9 @@
         }
         
         function compileAttributes(elt) {
-            var hasContent = !!elt.f;
+            let hasContent = !!elt.f;
             
-            for (var attr in elt.a) {
+            for (let attr in elt.a) {
                 if ( softAttributePattern.test(attr) )
                     compileAttribute(hasContent, elt, attr);
             }
@@ -981,23 +1011,24 @@
         });
     }
 
-    var to = soft.to = {};
+    let to = soft.to = {};
 
     to.element = function (token) {
-        var name = token.e;
-        var attrs = '';
+        console.log(token);
+        
+        let name = token.e;
+        let attrs = '';
 
-        var isVoid;
+        let isVoid;
 
         if (name && token.a)
             isVoid = soft.syntax.void in token.a || contains(soft.syntax.voidElements, name);
 
-        for (var attr in token.a) {
-            if ( !contains(soft.syntax.attributes, attr) && !(attr === soft.syntax.void) )
-                attrs += ` ${attr}="${token.a[attr]}"`;
+        for (let attr in token.a) {
+            attrs += ` ${attr}="${token.a[attr]}"`;
         }
 
-        var content = '';
+        let content = '';
 
         if (token.f)
             content = to.document(token.f);
@@ -1034,11 +1065,11 @@
         return new SoftParser(str).result[0];
     };
 
-    var CACHE = {};
+    let CACHE = {};
 
     soft.compile = function (str) {
-        var parsed = CACHE[str] || (CACHE[str] = soft.parse(str));
-        //var compiled = compile(parsed);
+        let parsed = CACHE[str] || (CACHE[str] = soft.parse(str));
+        //let compiled = compile(parsed);
 
         return function (template) {
             return render(parsed, template);
