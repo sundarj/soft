@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>soft</title>
-    <script src="soft.raw.js"></script>
+    <script src="soft.js"></script>
     <script>
         var template = {
                 title: 'an title',
@@ -29,10 +29,7 @@
                  return '#' + text;
         });*/
         
-        onload = function() {
-            
-            console.log(window.tpl.textContent);
-            
+        onload = function() {         
             
             console.time( '.compile()' );
                 var render = soft.compile(window.tpl.textContent); 
