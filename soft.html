@@ -4,45 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>soft</title>
-    <script src="soft.js"></script>
+    <script src="lib/Parser.js"></script>
     <script>
-        var template = {
-                title: 'an title',
-                description: 'i am enlightening you as you read this',
-                colors: ['fff', 'c00', 'ded', '22a0de', '1f1f1f'],
-                objects: [{
-                    first:  'one point one',
-                    second: 'one point two',
-                    third:  'one point three'
-                },
-                {
-                    first:  'two point one',
-                    second: 'two point two',
-                    third:  'two point three'
-                }],
-                color: 'bada55',
-                image: 'https://www.google.co.uk/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
-        };
         
-        /*soft.helper('color', function(text) {
-            if (text.charAt(0) !== '#')
-                 return '#' + text;
-        });*/
-        
-        onload = function() {         
-            
-            console.time( '.compile()' );
-                var render = soft.compile(window.tpl.textContent); 
-            console.timeEnd( '.compile()' );
-            
-            
-            console.time( 'render(template)' )
-                var rendered = render(template);  
-            console.timeEnd( 'render(template)' );
-            
-            console.log(rendered);
-            
-        };
     </script>
 </head>
 <body>
@@ -59,6 +23,7 @@
         http://twitter.github.io/hogan.js/builds/3.0.1/hogan-3.0.1.js
         http://paularmstrong.github.io/swig/js/swig.js
         https://github.com/latentflip/domthing
+        https://github.com/component/reactive/
         
         <script src="script.js" inline> https://github.com/remy/inliner
         So I'd like a solution that only did it for test/production
