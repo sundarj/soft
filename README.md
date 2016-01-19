@@ -1,4 +1,4 @@
-### soft [![][https://api.travis-ci.org/sundarj/soft.svg]](https://travis-ci.org/sundarj/soft)
+### soft [![Build Status](https://travis-ci.org/sundarj/soft.svg?branch=rewrite)](https://travis-ci.org/sundarj/soft)
 unobtrusive html-esque templating engine
 
 
