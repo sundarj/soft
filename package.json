@@ -2,10 +2,10 @@
   "name": "soft",
   "version": "0.0.0",
   "description": "html-esque templating engine",
-  "main": "soft.js",
+  "main": "build/soft.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -f umd -n soft lib/soft.js > soft.js",
+    "test": "tap test/*.js",
+    "build": "rollup -f umd -n soft src/soft.js > build/soft.js",
     "watch": "watchy -w lib -- npm run build"
   },
   "repository": {
@@ -25,5 +25,10 @@
   "bugs": {
     "url": "https://github.com/SundarJ/soft/issues"
   },
-  "homepage": "https://github.com/SundarJ/soft#readme"
+  "homepage": "https://github.com/SundarJ/soft#readme",
+  "devDependencies": {
+    "tap": "~5.1.1",
+    "watchy": "~0.6.5",
+    "rollup": "~0.25.0"
+  }
 }
