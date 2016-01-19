@@ -79,7 +79,8 @@ soft.render('<h1 :is="title"></h1>', {
 
 using template:
 
-```json{
+```json
+{
     "something": "soft.js",
     "array": [1,2,3],
     "objects": [{
