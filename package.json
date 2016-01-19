@@ -4,7 +4,9 @@
   "description": "html-esque templating engine",
   "main": "build/soft.js",
   "scripts": {
+    "pretest": "npm run build",
     "test": "tap test/*.js",
+    
     "build": "rollup -f umd -n soft src/soft.js > build/soft.js",
     "watch": "watchy -w lib -- npm run build"
   },
