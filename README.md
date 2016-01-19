@@ -39,7 +39,9 @@ insert the content from the template under the "title" key into the element
 iterate over `somearray`, creating a new element for each item
 
 <element :of|:is :as="currency">
+<element :of|:is :as="currency | bold">
 use the `currency` helper on the content from the template matching this element
+multiple helpers can be provided, delimited by the `|` character
 
 <element :void>
 do not fill in this element's content (used for void elements such as <img> where you only want attributes to be filled in)
