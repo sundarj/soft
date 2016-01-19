@@ -1,4 +1,4 @@
-### soft
+### soft [![][https://api.travis-ci.org/sundarj/soft.svg]](https://travis-ci.org/sundarj/soft)
 unobtrusive html-esque templating engine
 
 
