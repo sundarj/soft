@@ -7,6 +7,7 @@ http://twitter.github.io/hogan.js/builds/3.0.1/hogan-3.0.1.js
 http://paularmstrong.github.io/swig/js/swig.js
 https://github.com/latentflip/domthing
 https://github.com/component/reactive/
+https://raw.githubusercontent.com/riot/tmpl/dev/dist/tmpl.js
 
 https://docs.djangoproject.com/en/1.7/topics/templates/#template-inheritance
 http://paularmstrong.github.io/swig/docs/
@@ -16,3 +17,5 @@ http://jsfiddle.net/gLLL4qcf/1/ benchmarks
 
 <script src="script.js" inline> https://github.com/remy/inliner
 So I'd like a solution that only did it for test/production
+
+At its most basic, a template can simply be a string of HTML, but it can be also be a function that returns a string of HTML, or a function that returns a DOM element.
