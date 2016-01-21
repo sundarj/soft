@@ -11,7 +11,6 @@ https://github.com/component/reactive/
 https://docs.djangoproject.com/en/1.7/topics/templates/#template-inheritance
 http://paularmstrong.github.io/swig/docs/
 https://www.youtube.com/watch?v=z8UgDZ4rXBU&list=PLfXiENmg6yyU5kEHyo1kYkq7HEzBOoiTT&index=1 async
-https://github.com/janl/mustache.js
 
 http://jsfiddle.net/gLLL4qcf/1/ benchmarks
 
