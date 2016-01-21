@@ -19,14 +19,14 @@ tap.equal(
 )
 
 
-console.log('but not with [:void]')
+console.log('but not void elements')
 
 tap.equal(
-    soft.render('<img :void>'),
-    '<img>'
+    soft.render('<img><br>'),
+    '<img><br>'
 )
 
 tap.equal(
-    soft.render('<img :void>foo'),
-    '<img>foo'
+    soft.render('<img>foo<br>'),
+    '<img>foo<br>'
 )
