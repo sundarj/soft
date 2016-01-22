@@ -4,7 +4,28 @@
     (factory((global.soft = {})));
 }(this, function (exports) { 'use strict';
 
-    function parse() {}
+    const each = (arr, fn) => {
+        let index = -1
+        let length = arr.length
+
+        while (++index < length) {
+            fn(arr[index], index, arr)
+        }
+    };
+
+    function lex(str) {
+        let ret = []
+        
+        each(str, (char) => {
+            ret.push(char)
+        })
+        
+        return ret
+    }
+
+    function parse(str, opts) {
+        return lex(str)
+    }
 
     function compile() {}
     function render() {
