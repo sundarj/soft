@@ -28,8 +28,6 @@ export const isArray = Array.isArray
 
 export const isObject = (obj) => typeof obj === 'object'
 
-export const matchAll = (string) => new RegExp(string, "g")
-
 export const contains = (array, value) => {
     for (let i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
         if ( array[i] === value )
@@ -42,20 +40,12 @@ export const contains = (array, value) => {
 
 export const has = (obj, key) => obj[key] != void 0
 
-export const flatten = (arr) => {
-    return arr.reduce(function (a, b) {
-        return a.concat(isArray(b) ? flatten(b) : b)
-    }, [])
-};
-
 export const each = (arr, fn) => {
     let index = -1
     let length = arr.length
 
     while (++index < length) {
-        if (fn(arr[index], index, arr) === false) {
-            break
-        }
+        fn(arr[index], index, arr)
     }
 };
 
@@ -72,3 +62,5 @@ export const map = (arr, fn) => {
 };
 
 export const inspect = (obj) => console.log( JSON.stringify(obj, null, 4) )
+
+export const trim = (s) => s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
