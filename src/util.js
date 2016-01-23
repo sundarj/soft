@@ -64,3 +64,23 @@ export const map = (arr, fn) => {
 export const inspect = (obj) => console.log( JSON.stringify(obj, null, 4) )
 
 export const trim = (s) => s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
+
+const squotRE = /'/g;
+const quotRE = /"/g;
+const lfRE =  /\n/g;
+const crRE = /\r/g;
+const slashRE = /\\/g;
+const lineSepRE = /\u2028/;
+const paraSepRE = /\u2029/;
+
+export const esc = (s) => {
+    return s
+            .replace(slashRE, '\\\\')
+            .replace(squotRE, '\\\'')
+            .replace(quotRE, '\\"')
+            .replace(lfRE, '\\n')
+            .replace(crRE, '\\r')
+            .replace(lineSepRE, '\\u2028')
+            .replace(paraSepRE, '\\u2029');
+  }
+
