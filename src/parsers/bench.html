@@ -5,14 +5,13 @@
     <meta charset="UTF-8">
     <title>bench</title>
     <script src="html-parse-stringify.parse.js"></script>
-    <script src="gaikan-2.0.1.min.js"></script>
     <script src="ejs.js"></script>
     <script src="hogan-3.0.2.js"></script>
-    <script src="pegjs.parse.js"></script>
     <script src="ractive.parse.js"></script>
     <script src="sax.parse.js"></script>
     <script src="templayed.js"></script>
     <script src="lodash.js"></script>
+    <script src="swig.js"></script>
     <script src="benchmark.js"></script>
 </head>
 
@@ -2412,28 +2411,28 @@ Published</span>
     </div>
     <!-- wpwrap -->
     <script>
-        let suite = new Benchmark.Suite
+        var suite = new Benchmark.Suite
         
-        let saxparser = sax.parser(false)
+        var saxparser = sax.parser(false)
         
         suite
         .add('html-parse-stringify', () => {
             hps(document.body.innerHTML)
         })
         .add('hogan', () => {
-            Hogan.compile(document.body.innerHTML)
-        })
-        .add('gaikan', () => {
-            gaikan.compileFromString(document.body.innerHTML)
+            Hogan.scan(document.body.innerHTML)
         })
         .add('templayed', () => {
             templayed(document.body.innerHTML)
         })
+        .add('ejs', () => {
+            ejs.parse(document.body.innerHTML)
+        })
+        .add('swig', () => {
+            swig.parse(document.body.innerHTML)
+        })
         .add('lodash', () => {
             _.template(document.body.innerHTML)
-        })
-        .add('pegjs', () => {
-            pegjs.parse(document.body.innerHTML)
         })
         .add('ractive', () => {
             new ractive(document.body.innerHTML)
@@ -2451,7 +2450,7 @@ Published</span>
             console.log( 'fastest', this.filter('fastest').map('name') )
             console.log( 'slowesr', this.filter('slowest').map('name') )
         })
-        //.run()
+        .run()
     </script>
 </body>
 

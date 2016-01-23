@@ -1,4 +1,4 @@
-let pegjs = (function() {
+var pegjs = (function() {
   "use strict";
 
   /*

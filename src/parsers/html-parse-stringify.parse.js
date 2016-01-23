@@ -1,4 +1,4 @@
-let hps = (function() {/*jshint -W030 */
+var hps = (function() {/*jshint -W030 */
     var tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
     
     var attrRE = /([\w-]+)|['"]{1}([^'"]*)['"]{1}/g;

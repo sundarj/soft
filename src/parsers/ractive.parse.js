@@ -3,7 +3,7 @@
  * ractivejs/ractive/blob/master/src/parse/
  */
 
-let ractive = (function () {
+var ractive = (function () {
     var Parser, ParseError, leadingWhitespace = /^\s+/;
 
     ParseError = function (message) {
