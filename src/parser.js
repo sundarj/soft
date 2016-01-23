@@ -1,4 +1,4 @@
-import * as u from './util';
+import { each } from './util'
 
 let defaults = {}
 
