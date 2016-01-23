@@ -29,7 +29,7 @@
     const compile = (body) => {
         let parsed = CACHE[body] || (CACHE[body] = parse(body))
         
-        return new Function( 'data', `return ${JSON.stringify(parsed)}` )
+        return new Function( 'data', `return ${parsed.join('')}` )
     }
 
     const render = (body, data) => compile(body)(data)
