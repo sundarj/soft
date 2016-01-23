@@ -13,7 +13,6 @@ tap.deepEqual(
         '>',
         '<!--',
         {
-            t: 'is',
             i: 'thing'
         },
         '-->',
@@ -31,14 +30,12 @@ tap.deepEqual(
         '',
         '>',
         {
-            t: 'is',
             i: 'thing',
             h: 'helper'
         },
         '</h1>',
         '<p class="things-thing" id="things-',
         {
-            t: 'is',
             i: 'things',
             ix: 0
         },
@@ -46,7 +43,6 @@ tap.deepEqual(
         '>',
         '<p class="things-thing" id="things-',
         {
-            t: 'is',
             i: 'things',
             ix: 1
         },
@@ -54,7 +50,6 @@ tap.deepEqual(
         '>',
         '<p class="things-thing" id="things-',
         {
-            t: 'is',
             i: 'things',
             ix: 2
         },
