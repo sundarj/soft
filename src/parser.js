@@ -1,19 +1,25 @@
-import { each } from './util';
+import * as u from './util';
 
-let defaults = {
-    indent: false
-}
+let defaults = {}
+
+let openTagRE = /<([^ \/]+?)( [^>]+)*?>/g
 
 function lex(str) {
     let ret = []
+    let pos = 0
     
-    each(str, (char) => {
-        ret.push(char)
-    })
+    for (let match; match = openTagRE.exec(str);) {
+        ret.push( str.slice(pos, match.index) )
+        ret.push(match)
+        
+        pos = (match.index + match[0].length)
+    }
     
     return ret
 }
 
-export default function parse(str, opts) {
+const parse = (str, opts) => {
     return lex(str)
 }
+
+export { parse as default }

@@ -4,33 +4,35 @@
     (factory((global.soft = {})));
 }(this, function (exports) { 'use strict';
 
-    const each = (arr, fn) => {
-        let index = -1
-        let length = arr.length
-
-        while (++index < length) {
-            fn(arr[index], index, arr)
-        }
-    };
+    let openTagRE = /<([^ \/]+?)( [^>]+)*?>/g
 
     function lex(str) {
         let ret = []
+        let pos = 0
         
-        each(str, (char) => {
-            ret.push(char)
-        })
+        for (let match; match = openTagRE.exec(str);) {
+            ret.push( str.slice(pos, match.index) )
+            ret.push(match)
+            
+            pos = (match.index + match[0].length)
+        }
         
         return ret
     }
 
-    function parse(str, opts) {
+    const parse = (str, opts) => {
         return lex(str)
     }
 
-    function compile() {}
-    function render() {
-        return compile()
+    let CACHE = {}
+
+    const compile = (body) => {
+        let parsed = CACHE[body] || (CACHE[body] = parse(body))
+        
+        return new Function( 'data', `return ${JSON.stringify(parsed)}` )
     }
+
+    const render = (body, data) => compile(body)(data)
 
     exports.parse = parse;
     exports.compile = compile;
