@@ -1,8 +1,11 @@
-import { each } from './util'
+import { each, map, trim } from './util'
+import Syntax from './syntax'
 
-let defaults = {}
+let SYNTAX = Syntax()
+const DEFAULTS = {}
 
-let openTagRE = /<([^ \/]+?)( [^>]+)*?>/g
+
+const openTagRE = /<([^ \/]+?)( [^>]+)*?>/g
 
 function lex(str) {
     let ret = []
@@ -18,8 +21,53 @@ function lex(str) {
     return ret
 }
 
-const parse = (str, opts) => {
-    return lex(str)
+const attrRE = /([^= ]+)=("[^"]*"|'[^']*'|[^"'\s>]*)/g
+const softAttrRE = () => new RegExp(
+    attrRE.source.replace( '[^= ]', SYNTAX.attributes.join('|') ),
+    'g'
+)
+
+function findSoftAttrs(atts) {
+    if (!atts) return null
+    
+    let attrs = atts.match( softAttrRE() )
+    /*if (attrs) {
+        attrs = attrs.map( attr => attr.split("=") )
+    }*/
+    
+    return attrs
 }
 
-export { parse as default }
+const _parse = (opts) => {
+    return (token, index, tokens) => {
+        if ( Array.isArray(token) ) {
+            const softAttrs = findSoftAttrs( token[2] )
+            
+            if (softAttrs) {
+                each(softAttrs, (softAttr) => {
+                    token[2] = trim( token[2].replace(softAttr, '') )
+                })
+            }
+            
+            let nextToken = tokens[index + 1]
+            if (typeof nextToken === 'string') {
+                token.push(nextToken)
+                delete tokens[index + 1]
+            }
+        }
+        
+        return token
+    }
+}
+
+const parse = (str, opts) => {
+    let tokens = lex(str)
+    opts = Object.assign(DEFAULTS, opts)
+    
+    if (opts.prefix)
+        SYNTAX = Syntax(opts.prefix)
+    
+    return map( tokens, _parse(opts) )
+}
+
+export default parse
