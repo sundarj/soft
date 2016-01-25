@@ -10,4 +10,4 @@ const compile = (body) => {
     return new Function( 'data', `return '${parsed}'` )
 }
 
-export { compile as default }
+export default compile
