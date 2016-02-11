@@ -1,7 +1,6 @@
 const soft = require('..')
 const tap = require('tap')
 
-console.log('autoclose tags')
 
 tap.equal(
     soft.render('<h1>'),
@@ -19,7 +18,6 @@ tap.equal(
 )
 
 
-console.log('but not void elements')
 
 tap.equal(
     soft.render('<img><br>'),

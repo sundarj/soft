@@ -1,11 +1,8 @@
 const soft = require('..')
 const tap = require('tap')
 
-const case1 = ' <h1 :is="thing"><!--&self;--><b class="bold">bar</b></h1>'
+const case1 = '  <h1 :is="thing"><!--&self;--><b class="bold">bar</b></h1>'
 const case2 = '<h1 :is="thing" :as="helper"></h1>hello<p class="things-thing" id="things-&self;" :of="things"></p>'
-
-
-console.log('lexer')
 
 tap.deepEqual(
   soft.lex(case1),
@@ -17,11 +14,7 @@ tap.deepEqual(
         ':is': '"thing"'
       }
     },
-    '<!--',
-    {
-      t: 'e',
-    },
-    '-->',
+    '<!--&self;-->',
     {
       t: 'b',
       a: {
@@ -57,7 +50,7 @@ tap.deepEqual(
       a: {
         'class': '"things-thing"',
         'id': '"things-&self;"',
-        ':of': '"things'
+        ':of': '"things"'
       }
     },
     {
@@ -67,9 +60,7 @@ tap.deepEqual(
 )
 
 
-console.log('parser')
-
-tap.deepEqual(
+/*tap.deepEqual(
     soft.parse(case1),
     [
       ' ',
@@ -127,4 +118,4 @@ tap.deepEqual(
       ]
     }
   ]
-)
+)*/
