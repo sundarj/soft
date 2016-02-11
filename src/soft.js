@@ -1,5 +1,5 @@
-import parse from './parser'
-export { parse }
+import parse, { lex } from './parser'
+export { parse, lex }
 
 import compile from './compiler'
 export { compile }

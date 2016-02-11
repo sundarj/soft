@@ -13,20 +13,6 @@
       }
   };
 
-  const map = (arr, fn) => {
-      let index = -1
-      let length = arr.length
-      let result = Array(length)
-
-      while (++index < length) {
-          result[index] = fn(arr[index], index, arr)
-      }
-
-      return result
-  };
-
-  const trim = (s) => s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
-
   const squotRE = /'/g;
   const quotRE = /"/g;
   const lfRE =  /\n/g;
@@ -65,69 +51,59 @@
   const DEFAULTS = {}
 
 
-  const openTagRE = /<([^ \/]+?)( [^>]+)*?>/g
+  const openRE = /^<([^ \/]+?)( [^>]+)*?>/
+  const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
 
-  function lex(str) {
-      let ret = []
-      let pos = 0
-      
-      for (let match; match = openTagRE.exec(str);) {
-          ret.push( str.slice(pos, match.index) )
-          ret.push(match)
-          
-          pos = (match.index + match[0].length)
+  function openToken(match) {
+    let token = {
+      t: match[1],
+      a: {}
+    }
+    
+    if ( match[2] ) {
+      each(match[2].match(attrRE), attr => {
+        let parts = attr.split(/=(.+)/)
+        
+        token.a[parts[0]] = parts[1] || true
+      })
+    }
+    
+    return token
+  }
+
+  const lex = (str) => {
+    let tokens = []
+    let pos = 0
+    let length = str.length
+    
+    let m
+    let s = ''
+    
+    while (pos < length) {
+      if ( m = openRE.exec(str.slice(pos)) ) {
+        pos += m[0].length
+        
+        m = openToken(m)
+      } else {
+        s += str[pos++]
       }
       
-      return ret
-  }
-
-  const attrRE = /([^= ]+)=("[^"]*"|'[^']*'|[^"'\s>]*)/g
-  const softAttrRE = () => new RegExp(
-      attrRE.source.replace( '[^= ]', SYNTAX.attributes.join('|') ),
-      'g'
-  )
-
-  function findSoftAttrs(atts) {
-      if (!atts) return null
-      
-      let attrs = atts.match( softAttrRE() )
-      /*if (attrs) {
-          attrs = attrs.map( attr => attr.split("=") )
-      }*/
-      
-      return attrs
-  }
-
-  const _parse = (opts) => {
-      return (token, index, tokens) => {
-          if ( Array.isArray(token) ) {
-              const softAttrs = findSoftAttrs( token[2] )
-              
-              if (softAttrs) {
-                  each(softAttrs, (softAttr) => {
-                      token[2] = trim( token[2].replace(softAttr, '') )
-                  })
-              }
-              
-              let nextToken = tokens[index + 1]
-              if (typeof nextToken === 'string') {
-                  token.push(nextToken)
-                  delete tokens[index + 1]
-              }
-          }
-          
-          return token
+      if (m) {
+        if (s) {
+          tokens.push(s)
+          s = ''
+        }
+        tokens.push(m)
       }
+    }
+
+    return tokens
   }
+
 
   const parse = (str, opts) => {
       let tokens = lex(str)
       opts = Object.assign(DEFAULTS, opts)
-      
-      if (opts.prefix)
-          SYNTAX = Syntax(opts.prefix)
-      
-      return map( tokens, _parse(opts) )
   }
 
   let CACHE = {}
@@ -142,6 +118,7 @@
   const render = (body, data) => compile(body)(data)
 
   exports.parse = parse;
+  exports.lex = lex;
   exports.compile = compile;
   exports.render = render;
 
