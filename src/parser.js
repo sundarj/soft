@@ -5,7 +5,8 @@ let SYNTAX = Syntax()
 const DEFAULTS = {}
 
 
-const openRE = /^<([^ \/]+?)( [^>]+)*?>/
+const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
+const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
 const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
 
 function openToken(match) {
@@ -34,10 +35,18 @@ export const lex = (str) => {
   let s = ''
   
   while (pos < length) {
-    if ( m = openRE.exec(str.slice(pos)) ) {
+    let remains = str.slice(pos)
+    
+    if ( m = openRE.exec(remains) ) {
       pos += m[0].length
       
       m = openToken(m)
+    } else if ( m = closeRE.exec(remains) ) {
+      pos += m[0].length
+      
+      m = {
+        t: 'c'
+      }
     } else {
       s += str[pos++]
     }
@@ -58,6 +67,8 @@ export const lex = (str) => {
 const parse = (str, opts) => {
     let tokens = lex(str)
     opts = Object.assign(DEFAULTS, opts)
+    
+    return tokens
 }
 
 export default parse
