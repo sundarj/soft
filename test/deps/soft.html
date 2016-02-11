@@ -16,7 +16,7 @@
     onload = () => {
         "use strict";
         
-        let parsed, VERBOSE = 1;
+        /*let parsed, VERBOSE = 1;
         
         console.group('other')
         
@@ -50,21 +50,23 @@
         parsed = soft.parse(tpl.textContent)
         console.timeEnd('soft:parse')
         
-        console.log( JSON.stringify(parsed, null, 2) )
+        //console.log( JSON.stringify(parsed, null, 2) )*/
+        
+        console.log( soft.lex(tpl.textContent) )
     }
 </script>
 
-<script type="text/soft" id="tpl">
+<script type="template/soft" id="tpl">
     <h1 :is="title"></h1>
     <p :is="description"></p>
     
     <p>Help me be <span :is="color" :as="color"></span></p>
     
-    <ul class="colors">
+    <ul class="colors" data-boolean>
         <li class="list-color" :of="colors" :as="color" data-item="&self;">color is &lt;&self;&gt;</li>
     </ul>
     
-    <ul class="obj">
+    <ul class="obj 1+1=2">
         <li class="obj-item" :of="objects" :as="capitalize">&self.second; <b>&self[third];</b></li>
     </ul>
     
