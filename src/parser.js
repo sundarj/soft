@@ -65,6 +65,7 @@ export const lex = (str) => {
   return tokens
 }
 
+
 const parseElement = (token, parents) => { 
   let $type = token.t
   
@@ -74,15 +75,21 @@ const parseElement = (token, parents) => {
       return null
     }
   }
+
   
   let parent = parents[parents.length-1]
+  let isString = typeof token === 'string'
   
   if (parent) {
     parent.c = parent.c || []
     parent.c.push(token)
+    
+    if (!isString)
+      parents.push(token)
+    return null
   }
   
-  if (typeof token === 'string')
+  if (isString)
     return null
     
   parents.push(token)

@@ -134,6 +134,11 @@
     return tokens
   }
 
+
+  const parseAttributes = (token) => {
+    
+  }
+
   const parseElement = (token, parents) => { 
     let $type = token.t
     
@@ -144,14 +149,21 @@
       }
     }
     
+    parseAttributes(token)
+    
     let parent = parents[parents.length-1]
+    let isString = typeof token === 'string'
     
     if (parent) {
       parent.c = parent.c || []
       parent.c.push(token)
+      
+      if (!isString)
+        parents.push(token)
+      return null
     }
     
-    if (typeof token === 'string')
+    if (isString)
       return null
       
     parents.push(token)
