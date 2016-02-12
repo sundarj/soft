@@ -1,4 +1,4 @@
-import { each, map, trim } from './util'
+import { each, map, filter, contains, trim } from './util'
 import Syntax from './syntax'
 
 let SYNTAX = Syntax()
@@ -8,6 +8,7 @@ const DEFAULTS = {}
 const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
 const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
 const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
+const commentRE = /^<!--(.*?)-->/
 
 function openToken(match) {
   let token = {
@@ -58,17 +59,53 @@ export const lex = (str) => {
       }
       tokens.push(m)
     }
+    
   }
 
   return tokens
 }
 
+const parseElement = (token, parents) => { 
+  let $type = token.t
+  
+  if ($type) {
+    if ( $type === 'c' ) {
+      parents.pop()
+      return null
+    }
+  }
+  
+  let parent = parents[parents.length-1]
+  
+  if (parent) {
+    parent.c = parent.c || []
+    parent.c.push(token)
+  }
+  
+  if (typeof token === 'string')
+    return null
+    
+  parents.push(token)
+  return token
+}
 
 const parse = (str, opts) => {
     let tokens = lex(str)
     opts = Object.assign(DEFAULTS, opts)
+
+    let parents = []
     
-    return tokens
+    return filter(
+      map(tokens, function parseToken(token) {
+        if (!parents.length && typeof token === 'string')
+          return token
+        
+        token = parseElement(token, parents)
+        
+        return token
+      }),
+      i => i
+    )
 }
 
 export default parse

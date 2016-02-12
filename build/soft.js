@@ -13,6 +13,31 @@
       }
   };
 
+  const map = (arr, fn) => {
+      let index = -1
+      let length = arr.length
+      let result = Array(length)
+
+      while (++index < length) {
+          result[index] = fn(arr[index], index, arr)
+      }
+
+      return result
+  };
+
+  const filter = (arr, predic) => {
+    let index = -1
+    let length = arr.length
+    let result = []
+    
+    while (++index < length) {
+      if ( predic(arr[index]) )
+        result.push(arr[index])
+    }
+    
+    return result
+  }
+
   const squotRE = /'/g;
   const quotRE = /"/g;
   const lfRE =  /\n/g;
@@ -54,7 +79,6 @@
   const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
   const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
   const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
-
   function openToken(match) {
     let token = {
       t: match[1],
@@ -104,17 +128,53 @@
         }
         tokens.push(m)
       }
+      
     }
 
     return tokens
   }
 
+  const parseElement = (token, parents) => { 
+    let $type = token.t
+    
+    if ($type) {
+      if ( $type === 'c' ) {
+        parents.pop()
+        return null
+      }
+    }
+    
+    let parent = parents[parents.length-1]
+    
+    if (parent) {
+      parent.c = parent.c || []
+      parent.c.push(token)
+    }
+    
+    if (typeof token === 'string')
+      return null
+      
+    parents.push(token)
+    return token
+  }
 
   const parse = (str, opts) => {
       let tokens = lex(str)
       opts = Object.assign(DEFAULTS, opts)
+
+      let parents = []
       
-      return tokens
+      return filter(
+        map(tokens, function parseToken(token) {
+          if (!parents.length && typeof token === 'string')
+            return token
+          
+          token = parseElement(token, parents)
+          
+          return token
+        }),
+        i => i
+      )
   }
 
   let CACHE = {}

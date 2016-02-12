@@ -61,6 +61,19 @@ export const map = (arr, fn) => {
     return result
 };
 
+export const filter = (arr, predic) => {
+  let index = -1
+  let length = arr.length
+  let result = []
+  
+  while (++index < length) {
+    if ( predic(arr[index]) )
+      result.push(arr[index])
+  }
+  
+  return result
+}
+
 export const inspect = (obj) => console.log( JSON.stringify(obj, null, 4) )
 
 export const trim = (s) => s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
@@ -83,4 +96,3 @@ export const esc = (s) => {
             .replace(lineSepRE, '\\u2028')
             .replace(paraSepRE, '\\u2029');
   }
-

@@ -53,10 +53,14 @@
         //console.log( JSON.stringify(parsed, null, 2) )*/
         
         console.log( soft.lex(tpl.textContent) )
+        console.log(tpl.textContent)
+       // console.log( soft.parse(tpl.textContent) )
     }
 </script>
 
 <script type="template/soft" id="tpl">
+    <!-- some <i>comment</i> -->
+
     <h1 :is="title"></h1>
     <p :is="description"></p>
     
