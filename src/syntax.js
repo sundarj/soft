@@ -6,12 +6,12 @@ function prefixed(obj, prefix) {
 
 let Syntax = (prefix) => {
     return {
-        entity: ['self', 'this', 'here'],
-        attributes: prefixed(['is', 'of', 'as']),
-        elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-        void: prefixed('void'),
-        voidElements: ['import', 'include'],
-        helper: prefixed('as')
+        ENTITY: ['self', 'this', 'here'],
+        ATTRIBUTE: prefixed(['is', 'of', 'as']),
+        ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
+        /*void: prefixed('void'),
+        voidElements: ['import', 'include'],*/
+        HELPER: prefixed('as')
     };
 }
 
