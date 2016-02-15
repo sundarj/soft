@@ -4,6 +4,16 @@
   (factory((global.soft = {})));
 }(this, function (exports) { 'use strict';
 
+  const contains = (array, value) => {
+      for (let i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
+          if ( array[i] === value )
+              return true
+          else if ( array[(l - i)] === value )
+              return true
+      }
+      return false
+  }
+
   const each = (arr, fn) => {
       let index = -1
       let length = arr.length
@@ -39,7 +49,7 @@
   }
 
   const squotRE = /'/g;
-  const quotRE = /"/g;
+  const quotRE$1 = /"/g;
   const lfRE =  /\n/g;
   const crRE = /\r/g;
   const slashRE = /\\/g;
@@ -50,7 +60,7 @@
       return s
               .replace(slashRE, '\\\\')
               .replace(squotRE, '\\\'')
-              .replace(quotRE, '\\"')
+              .replace(quotRE$1, '\\"')
               .replace(lfRE, '\\n')
               .replace(crRE, '\\r')
               .replace(lineSepRE, '\\u2028')
@@ -63,12 +73,12 @@
 
   let Syntax = (prefix) => {
       return {
-          entity: ['self', 'this', 'here'],
-          attributes: prefixed(['is', 'of', 'as']),
-          elements: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-          void: prefixed('void'),
-          voidElements: ['import', 'include'],
-          helper: prefixed('as')
+          ENTITY: ['self', 'this', 'here'],
+          ATTRIBUTE: prefixed(['is', 'of', 'as']),
+          ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
+          /*void: prefixed('void'),
+          voidElements: ['import', 'include'],*/
+          HELPER: prefixed('as')
       };
   }
 
@@ -78,14 +88,18 @@
 
   const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
   const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
+  const commentRE = /^<!--(.+?)-->/
+
   const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
+
   function openToken(match) {
     let token = {
-      t: match[1],
-      a: {}
+      t: match[1]
     }
     
     if ( match[2] ) {
+      token.a = {}
+      
       each(match[2].match(attrRE), attr => {
         let parts = attr.split(/=(.+)/)
         
@@ -117,9 +131,14 @@
         m = {
           t: 'c'
         }
+      } else if ( m = commentRE.exec(remains) ) {
+        pos += m[0].length
+        m = false
       } else {
         s += str[pos++]
       }
+      
+      
       
       if (m) {
         if (s) {
@@ -128,29 +147,67 @@
         }
         tokens.push(m)
       }
-      
     }
 
     return tokens
   }
 
 
-  const parseAttributes = (token) => {
+  const voidRE = /^(?:area|base|br|col|command|doctype|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|import|include)$/i
+
+  const softEntities = SYNTAX.ENTITY.join('|')
+  const softEntityRE = new RegExp(
+    '&(' + softEntities + ');' + '|' + // plain ol' entities or..
+    '&' + '(?:' + softEntities + ')' + // entities with
+    '(?:' + 
+    '\\.([^;]+)' + '|' + // dot notation or..
+    '\\[([^\\]]+)\\]' + // bracket notation
+    ')?;'
+  )
+
+  const quotRE = /['"]/g
+
+  const parseSoftAttribute = (name, token, attributes) => {
+    let tokenAttributes = token.a
     
+    each(attributes, function(attribute) {
+      if ( !contains(SYNTAX.ATTRIBUTE, attribute) ) {
+        let value = tokenAttributes[attribute]
+        
+        if ( softEntityRE.test(value) && !Array.isArray(value) ) {
+          token.a[attribute] = [
+            value,
+            {
+              i: tokenAttributes[name].replace(quotRE, '')
+            }
+          ]
+        }
+      }
+    })
+  }
+
+  const parseAttributes = (token) => {
+    each(Object.keys(token.a), function(name, index, attributes) {
+      if ( contains(SYNTAX.ATTRIBUTE, name) ) {
+        parseSoftAttribute(name, token, attributes)
+        
+        delete token.a[name]
+      }
+    })
   }
 
   const parseElement = (token, parents) => { 
     let $type = token.t
     
     if ($type) {
-      if ( $type === 'c' ) {
+      if ($type === 'c') {
         parents.pop()
         return null
       }
+      if (token.a)
+        parseAttributes(token)
     }
-    
-    parseAttributes(token)
-    
+
     let parent = parents[parents.length-1]
     let isString = typeof token === 'string'
     
@@ -158,15 +215,16 @@
       parent.c = parent.c || []
       parent.c.push(token)
       
-      if (!isString)
+      if ( !isString && !voidRE.test($type) )
         parents.push(token)
       return null
     }
     
     if (isString)
       return null
-      
-    parents.push(token)
+    
+    if ( !voidRE.test($type) )
+      parents.push(token)
     return token
   }
 
@@ -181,11 +239,9 @@
           if (!parents.length && typeof token === 'string')
             return token
           
-          token = parseElement(token, parents)
-          
-          return token
+          return parseElement(token, parents)
         }),
-        i => i
+        Boolean
       )
   }
 

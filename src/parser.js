@@ -7,16 +7,18 @@ const DEFAULTS = {}
 
 const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
 const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
+const commentRE = /^<!--(.+?)-->/
+
 const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
-const commentRE = /^<!--(.*?)-->/
 
 function openToken(match) {
   let token = {
-    t: match[1],
-    a: {}
+    t: match[1]
   }
   
   if ( match[2] ) {
+    token.a = {}
+    
     each(match[2].match(attrRE), attr => {
       let parts = attr.split(/=(.+)/)
       
@@ -48,9 +50,14 @@ export const lex = (str) => {
       m = {
         t: 'c'
       }
+    } else if ( m = commentRE.exec(remains) ) {
+      pos += m[0].length
+      m = false
     } else {
       s += str[pos++]
     }
+    
+    
     
     if (m) {
       if (s) {
@@ -59,24 +66,67 @@ export const lex = (str) => {
       }
       tokens.push(m)
     }
-    
   }
 
   return tokens
 }
 
 
+const voidRE = /^(?:area|base|br|col|command|doctype|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|import|include)$/i
+
+const softEntities = SYNTAX.ENTITY.join('|')
+const softEntityRE = new RegExp(
+  '&(' + softEntities + ');' + '|' + // plain ol' entities or..
+  '&' + '(?:' + softEntities + ')' + // entities with
+  '(?:' + 
+  '\\.([^;]+)' + '|' + // dot notation or..
+  '\\[([^\\]]+)\\]' + // bracket notation
+  ')?;'
+)
+
+const quotRE = /['"]/g
+
+const parseSoftAttribute = (name, token, attributes) => {
+  let tokenAttributes = token.a
+  
+  each(attributes, function(attribute) {
+    if ( !contains(SYNTAX.ATTRIBUTE, attribute) ) {
+      let value = tokenAttributes[attribute]
+      
+      if ( softEntityRE.test(value) && !Array.isArray(value) ) {
+        token.a[attribute] = [
+          value,
+          {
+            i: tokenAttributes[name].replace(quotRE, '')
+          }
+        ]
+      }
+    }
+  })
+}
+
+const parseAttributes = (token) => {
+  each(Object.keys(token.a), function(name, index, attributes) {
+    if ( contains(SYNTAX.ATTRIBUTE, name) ) {
+      parseSoftAttribute(name, token, attributes)
+      
+      delete token.a[name]
+    }
+  })
+}
+
 const parseElement = (token, parents) => { 
   let $type = token.t
   
   if ($type) {
-    if ( $type === 'c' ) {
+    if ($type === 'c') {
       parents.pop()
       return null
     }
+    if (token.a)
+      parseAttributes(token)
   }
 
-  
   let parent = parents[parents.length-1]
   let isString = typeof token === 'string'
   
@@ -84,15 +134,16 @@ const parseElement = (token, parents) => {
     parent.c = parent.c || []
     parent.c.push(token)
     
-    if (!isString)
+    if ( !isString && !voidRE.test($type) )
       parents.push(token)
     return null
   }
   
   if (isString)
     return null
-    
-  parents.push(token)
+  
+  if ( !voidRE.test($type) )
+    parents.push(token)
   return token
 }
 
@@ -107,11 +158,9 @@ const parse = (str, opts) => {
         if (!parents.length && typeof token === 'string')
           return token
         
-        token = parseElement(token, parents)
-        
-        return token
+        return parseElement(token, parents)
       }),
-      i => i
+      Boolean
     )
 }
 
