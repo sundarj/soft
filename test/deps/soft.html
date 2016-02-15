@@ -16,9 +16,9 @@
     onload = () => {
         "use strict";
         
-        /*let parsed, VERBOSE = 1;
+        let parsed, VERBOSE = 1;
         
-        console.group('other')
+        console.groupCollapsed('other')
         
         console.time('Hogan:scan')
         parsed = Hogan.scan(tpl.textContent)
@@ -50,11 +50,11 @@
         parsed = soft.parse(tpl.textContent)
         console.timeEnd('soft:parse')
         
-        //console.log( JSON.stringify(parsed, null, 2) )*/
+        //console.log( soft.lex(tpl.textContent) )
         
-        console.log( soft.lex(tpl.textContent) )
-        console.log(tpl.textContent)
-       // console.log( soft.parse(tpl.textContent) )
+       console.log(parsed)
+       
+       //console.log(tpl.textContent)
     }
 </script>
 
@@ -74,8 +74,19 @@
         <li class="obj-item" :of="objects" :as="capitalize">&self.second; <b>&self[third];</b></li>
     </ul>
     
-    <img src="&self;" :is="image" :void>
-    <img src="&this;" :is="image" :void>
+    <if true>
+      <p>true</p>
+      <else>
+        <p>not true</p>
+      </else>
+    </if>
+    
+    <if title="false">
+      <p>title is false</p>
+    </if>
+    
+    <img src="&self;" :is="image">
+    <img src="&this;" :is="image">
     
     <pre class="license"><import src="LICENSE"></pre>
     <pre class="readme"><include src="README.md" escaped></pre>

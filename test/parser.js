@@ -15,7 +15,6 @@ tap.deepEqual(
         ':is': '"thing"'
       }
     },
-    '<!--&self;-->',
     {
       t: 'b',
       a: {
@@ -68,11 +67,6 @@ tap.deepEqual(
       t: 'h1',
       a: {},
       c: [
-        '<!--',
-        {
-          i: 'thing'
-        },
-        '-->',
         {
           t: 'b',
           a: {
@@ -106,7 +100,7 @@ tap.deepEqual(
       a: {
         class: '"things-thing"',
         id: [
-          '"things-"',
+          '"things-&self;"',
           {
             i: 'things'
           }
@@ -127,7 +121,6 @@ tap.deepEqual(
     '  sup it\'s ',
     {
       t: 'h1',
-      a: {},
       c: [
         'hello ',
         {
@@ -143,7 +136,6 @@ tap.deepEqual(
     },
     {
       t: 'p',
-      a: {},
       c: [
         'caterpillars'
       ]
