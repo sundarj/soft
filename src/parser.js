@@ -2,43 +2,52 @@ import { each, map, filter, contains, trim } from './util'
 import Syntax from './syntax'
 
 let SYNTAX = Syntax()
-const DEFAULTS = {}
-
 
 const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
 const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
 const commentRE = /^<!--(.+?)-->/
 
-const attrRE = /([^= ]+)(=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
+const attrRE = /([^= ]+)(?:=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
 
 function openToken(match) {
-  let token = {
+  const token = {
     t: match[1]
   }
   
-  if ( match[2] ) {
-    token.a = {}
+  const attributes = match[2]
+  
+  if (attributes) {
+    const attributeMap = {}
     
-    each(match[2].match(attrRE), attr => {
-      let parts = attr.split(/=(.+)/)
-      
-      token.a[parts[0]] = parts[1] || true
-    })
+    let attr
+    
+    while( attr = attrRE.exec(attributes) ) {
+      attributeMap[attr[1]] = attr[2] || true
+    }
+    
+    token.a = attributeMap
   }
   
   return token
 }
 
-export const lex = (str) => {
-  let tokens = []
-  let pos = 0
-  let length = str.length
+export function lex(str) {
+  const tokens = []
+  const length = str.length
   
+  let pos = 0
   let m
-  let s = ''
+  let buf = ''
   
   while (pos < length) {
     let remains = str.slice(pos)
+    
+    // early exit in case of plain text
+    if ( remains[0] !== '<' ) {
+      buf += str[pos++]
+      
+      continue
+    }
     
     if ( m = openRE.exec(remains) ) {
       pos += m[0].length
@@ -51,22 +60,24 @@ export const lex = (str) => {
         t: 'c'
       }
     } else if ( m = commentRE.exec(remains) ) {
+      // ignore comments
+      
       pos += m[0].length
       m = false
-    } else {
-      s += str[pos++]
     }
     
-    
-    
     if (m) {
-      if (s) {
-        tokens.push(s)
-        s = ''
+      if (buf) {
+        tokens.push(buf)
+        buf = ''
       }
+      
       tokens.push(m)
     }
   }
+  
+  if (!m && buf)
+    return buf
 
   return tokens
 }
@@ -86,49 +97,29 @@ const softEntityRE = new RegExp(
 
 const quotRE = /['"]/g
 
-const parseSoftAttribute = (name, token, attributes) => {
-  let tokenAttributes = token.a
+function parseAttributes(token) {
+  const tokenAttributes = token.a
   
-  each(attributes, function(attribute) {
-    if ( !contains(SYNTAX.ATTRIBUTE, attribute) ) {
-      let value = tokenAttributes[attribute]
-      
-      if ( softEntityRE.test(value) && !Array.isArray(value) ) {
-        token.a[attribute] = [
-          value,
-          {
-            i: tokenAttributes[name].replace(quotRE, '')
-          }
-        ]
-      }
-    }
+  each(SYNTAX.ATTRIBUTE, attribute => {
+    if ( tokenAttributes[attribute] );
   })
 }
 
-const parseAttributes = (token) => {
-  each(Object.keys(token.a), function(name, index, attributes) {
-    if ( contains(SYNTAX.ATTRIBUTE, name) ) {
-      parseSoftAttribute(name, token, attributes)
-      
-      delete token.a[name]
-    }
-  })
-}
-
-const parseElement = (token, parents) => { 
-  let $type = token.t
+function parseElement(token, parents) { 
+  const $type = token.t
   
   if ($type) {
     if ($type === 'c') {
       parents.pop()
       return null
     }
+    
     if (token.a)
       parseAttributes(token)
   }
 
-  let parent = parents[parents.length-1]
-  let isString = typeof token === 'string'
+  const parent = parents[parents.length-1]
+  const isString = typeof token === 'string'
   
   if (parent) {
     parent.c = parent.c || []
@@ -136,6 +127,7 @@ const parseElement = (token, parents) => {
     
     if ( !isString && !voidRE.test($type) )
       parents.push(token)
+      
     return null
   }
   
@@ -144,17 +136,19 @@ const parseElement = (token, parents) => {
   
   if ( !voidRE.test($type) )
     parents.push(token)
+    
   return token
 }
 
-const parse = (str, opts) => {
-    let tokens = lex(str)
-    opts = Object.assign(DEFAULTS, opts)
+export default function parse(str) {
+    const tokens = lex(str)
+    if (typeof tokens === 'string')
+      return tokens
 
-    let parents = []
+    const parents = []
     
     return filter(
-      map(tokens, function parseToken(token) {
+      map(tokens, token => {
         if (!parents.length && typeof token === 'string')
           return token
         
@@ -163,5 +157,3 @@ const parse = (str, opts) => {
       Boolean
     )
 }
-
-export default parse

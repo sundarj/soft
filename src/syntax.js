@@ -11,7 +11,7 @@ let Syntax = (prefix) => {
         ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
         /*void: prefixed('void'),
         voidElements: ['import', 'include'],*/
-        HELPER: prefixed('as')
+        HELPER: prefixed('as'),
     };
 }
 

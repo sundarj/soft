@@ -4,4 +4,6 @@ export { parse, lex }
 import compile from './compiler'
 export { compile }
 
-export const render = (body, data) => compile(body)(data)
+export function render(body, data){
+  return compile(body)(data)
+}
