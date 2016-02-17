@@ -1,6 +1,6 @@
 "use strict";
 
-export const htmlify = (str) => {
+export function htmlify(str) {
     return str.replace(/&(lt|gt|amp);/g, function (match, entity) {
         return ({
             'lt': '<',
@@ -10,7 +10,7 @@ export const htmlify = (str) => {
     })
 }
 
-export const htmlescape = (str) => {
+export function htmlescape(str) {
     return str.replace(/[&<>]/g, function (char) {
         return ({
             '<': '&lt;',
@@ -20,15 +20,9 @@ export const htmlescape = (str) => {
     })
 }
 
-export const noop = (x) => x
+export function noop(x) { return x }
 
-export const isString = (obj) => typeof obj === 'string'
-
-export const isArray = Array.isArray
-
-export const isObject = (obj) => typeof obj === 'object'
-
-export const contains = (array, value) => {
+export function contains (array, value) {
     for (let i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
         if ( array[i] === value )
             return true
@@ -38,9 +32,11 @@ export const contains = (array, value) => {
     return false
 }
 
-export const has = (obj, key) => obj[key] != void 0
+export function has(obj, key) {
+    return obj[key] != void 0
+}
 
-export const each = (arr, fn) => {
+export function each(arr, fn) {
     let index = -1
     let length = arr.length
 
@@ -49,7 +45,7 @@ export const each = (arr, fn) => {
     }
 };
 
-export const map = (arr, fn) => {
+export function map(arr, fn) {
     let index = -1
     let length = arr.length
     let result = Array(length)
@@ -61,7 +57,7 @@ export const map = (arr, fn) => {
     return result
 };
 
-export const filter = (arr, predic) => {
+export function filter(arr, predic) {
   let index = -1
   let length = arr.length
   let result = []
@@ -74,9 +70,9 @@ export const filter = (arr, predic) => {
   return result
 }
 
-export const inspect = (obj) => console.log( JSON.stringify(obj, null, 4) )
-
-export const trim = (s) => s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
+export function trim(s) { 
+  return s.trim? s.trim() : s.replace(/^\s*|\s*$/g, '')
+}
 
 const squotRE = /'/g;
 const quotRE = /"/g;
@@ -86,7 +82,7 @@ const slashRE = /\\/g;
 const lineSepRE = /\u2028/;
 const paraSepRE = /\u2029/;
 
-export const esc = (s) => {
+export function esc(s) {
     return s
             .replace(slashRE, '\\\\')
             .replace(squotRE, '\\\'')

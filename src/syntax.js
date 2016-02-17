@@ -4,7 +4,7 @@ function prefixed(obj, prefix) {
     return Array.prototype.concat.call(obj).map(item => (prefix||':') + item)
 };
 
-let Syntax = (prefix) => {
+export default function Syntax(prefix) {
     return {
         ENTITY: ['self', 'this', 'here'],
         ATTRIBUTE: prefixed(['is', 'of', 'as']),
@@ -14,5 +14,3 @@ let Syntax = (prefix) => {
         HELPER: prefixed('as'),
     };
 }
-
-export default Syntax
