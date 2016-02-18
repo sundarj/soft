@@ -3,11 +3,16 @@
   "version": "0.0.0",
   "description": "html-esque templating engine",
   "main": "build/soft.js",
+  "jsnext:main": "build/soft.es2015.js",
   "scripts": {
     "pretest": "npm run build",
     "test": "tap test/*.js",
     
-    "build": "rollup -f umd -n soft src/soft.js > build/soft.js",
+    "build:umd": "rollup -c rollup.config.umd.js",
+    "build:es2015": "rollup -c rollup.config.es2015.js",
+    "prebuild:minify": "npm run build:umd",
+    "build:minify": "rollup -c rollup.config.minify.js",
+    "build": "npm run build:minify && npm run build:es2015",
     
     "prewatch": "npm run build",
     "watch": "wr 'npm run build' src"
@@ -31,7 +36,10 @@
   },
   "homepage": "https://github.com/SundarJ/soft#readme",
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.1.1",
     "rollup": "~0.25.0",
+    "rollup-plugin-babel": "^2.3.9",
+    "rollup-plugin-uglify": "^0.2.0",
     "tap": "~5.1.1",
     "wr": "^1.3.1"
   },
