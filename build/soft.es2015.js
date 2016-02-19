@@ -168,20 +168,30 @@ const softEntityRE = new RegExp(
   '\\[([^\\]]+)\\]' + ');' // bracket notation
 )
 
+const quotRE = /['"]/g
+
 function parseAttribute(attribute, attributes) {
   const val = attributes[attribute]
-  if ( !typeof val === 'string' )
+  if ( typeof val !== 'string' )
     return null
-    
-  console.log(val)
     
   let m
   
   if ( m = val.match(softEntityRE) ) {
-    attributes[attribute] = [
-      val,
-      m
-    ]
+    attributes[attribute] = m
+    
+    each(SYNTAX.ATTRIBUTE, softAttribute => {
+      const item = attributes[softAttribute]
+      if (item) {
+        m.soft = {
+          i: item.replace(quotRE, '')
+        }
+        
+        const helper = attributes[SYNTAX.HELPER]
+        if (helper)
+          m.soft.h = helper
+      }
+    })
   }
 }
 

@@ -162,26 +162,49 @@
   '\\[([^\\]]+)\\]' + ');' // bracket notation
   );
 
+  var quotRE = /^['"]|['"]$/g;
+
   function parseAttribute(attribute, attributes) {
     var val = attributes[attribute];
     if (typeof val !== 'string') return null;
 
     var m = undefined;
 
-    if (m = val.match(softEntityRE)) attributes[attribute] = m;
+    if (m = val.match(softEntityRE)) {
+      attributes[attribute] = m;
+
+      each(SYNTAX.ATTRIBUTE, function (softAttribute) {
+        var item = attributes[softAttribute];
+        if (item) {
+          m.soft = {
+            i: item.replace(quotRE, '')
+          };
+
+          var helper = attributes[SYNTAX.HELPER];
+          if (helper) m.soft.h = helper.replace(quotRE, '');
+        }
+      });
+    }
   }
 
   function parseAttributes(token) {
     var tokenAttributes = token.a;
+    var toDelete = [];
 
     each(Object.keys(tokenAttributes), function (attribute, index, attributes) {
       if (contains(SYNTAX.ATTRIBUTE, attribute)) {
         //parseSoftAttribute(attribute, token)
-        delete token.a[attribute];
+        toDelete.push(attribute);
       } else {
         parseAttribute(attribute, tokenAttributes);
       }
     });
+
+    each(toDelete, function (attribute) {
+      return delete tokenAttributes[attribute];
+    });
+
+    token.a = tokenAttributes;
   }
 
   function parseElement(token, parents) {

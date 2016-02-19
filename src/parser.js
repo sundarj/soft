@@ -93,7 +93,7 @@ const softEntityRE = new RegExp(
   '\\[([^\\]]+)\\]' + ');' // bracket notation
 )
 
-const quotRE = /['"]/g
+const quotRE = /^['"]|['"]$/g
 
 function parseAttribute(attribute, attributes) {
   const val = attributes[attribute]
@@ -102,21 +102,40 @@ function parseAttribute(attribute, attributes) {
     
   let m
   
-  if ( m = val.match(softEntityRE) )
+  if ( m = val.match(softEntityRE) ) {
     attributes[attribute] = m
+    
+    each(SYNTAX.ATTRIBUTE, softAttribute => {
+      const item = attributes[softAttribute]
+      if (item) {
+        m.soft = {
+          i: item.replace(quotRE, '')
+        }
+        
+        const helper = attributes[SYNTAX.HELPER]
+        if (helper)
+          m.soft.h = helper.replace(quotRE, '')
+      }
+    })
+  }
 }
 
 function parseAttributes(token) {
   const tokenAttributes = token.a
+  const toDelete = []
   
   each(Object.keys(tokenAttributes), (attribute, index, attributes) => {
     if ( contains(SYNTAX.ATTRIBUTE, attribute) ) {
       //parseSoftAttribute(attribute, token)
-      delete token.a[attribute]
+      toDelete.push(attribute)
     } else {
       parseAttribute(attribute, tokenAttributes)
     }
   })
+  
+  each(toDelete, attribute => delete tokenAttributes[attribute])
+  
+  token.a = tokenAttributes
 }
 
 function parseElement(token, parents) { 
