@@ -38,7 +38,7 @@ export function has(obj, key) {
 
 export function each(arr, fn) {
     let index = -1
-    let length = arr.length
+    const length = arr.length
 
     while (++index < length) {
         fn(arr[index], index, arr)
@@ -47,8 +47,8 @@ export function each(arr, fn) {
 
 export function map(arr, fn) {
     let index = -1
-    let length = arr.length
-    let result = Array(length)
+    const length = arr.length
+    const result = Array(length)
 
     while (++index < length) {
         result[index] = fn(arr[index], index, arr)
@@ -59,8 +59,8 @@ export function map(arr, fn) {
 
 export function filter(arr, predic) {
   let index = -1
-  let length = arr.length
-  let result = []
+  const length = arr.length
+  const result = []
   
   while (++index < length) {
     if ( predic(arr[index]) )
