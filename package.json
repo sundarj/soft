@@ -15,7 +15,7 @@
     "build": "npm run build:minify && npm run build:es2015",
     
     "prewatch": "npm run build",
-    "watch": "wr 'npm run build' src"
+    "watch": "wr 'npm run build:umd' src"
   },
   "repository": {
     "type": "git",
