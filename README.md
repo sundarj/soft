@@ -1,14 +1,14 @@
 ### soft [![Build Status](https://travis-ci.org/sundarj/soft.svg?branch=rewrite)](https://travis-ci.org/sundarj/soft)
-unobtrusive html-esque templating engine
+unobtrusive html-esque templating engine (under development)
 
 
 #### about
 
-Soft is an extensible templating engine that aims to be as close to plain HTML as possible. Using a few elements and some attributes (and no curly-braces), it aims to be simple and expressive.
+soft is an extensible templating engine that aims to be as close to plain HTML as possible. Using a few elements and some attributes (and no curly-braces), it aims to be simple and expressive.
 
 #### syntax
 
-Soft uses three basic types of expression: elements, attributes, and entities which can be plugged in to an existing HTML document with minimal visual change, and follow the same syntax.
+it uses three basic types of expression: elements, attributes, and entities which can be plugged in to an existing html document with minimal visual change, and which follow the same syntax as html (ish).
 
 #### elements
 
@@ -24,8 +24,7 @@ starts an if block
 <else>
 starts an else block
 
-<endif>
-<fi>
+</if>
 ends an if block
 ```
 
@@ -39,7 +38,7 @@ insert the content from the template under the "title" key into the element
 iterate over `somearray`, creating a new element for each item
 
 <element :of|:is :as="currency">
-<element :of|:is :as="currency | bold">
+<element :of|:is :as="currency|bold">
 use the `currency` helper on the content from the template matching this element
 multiple helpers can be provided, delimited by the `|` character
 ```
@@ -53,24 +52,34 @@ multiple helpers can be provided, delimited by the `|` character
 wherever these appear in the element (attributes or content), they will be replaced with the current item of the template ( à la Mustache {{.}} )
 ```
 
+#### helpers
+
+helpers are defined by calling `soft.helpers('foo', fn)` or `soft.helpers({ foo: fn })`
 
 #### usage
 
-Soft can compile a string, or render that string in realtime; the choice is yours.
+You can precompile a string (which returns the render function), or render that string straight away
 
 ```js
 # compiling
-var render = soft.compile('<h1 :is="title"></h1>');
+const render = soft.compile('<h1 :is="title"></h1>')
 render({
     title: 'an amazing title' 
-});
+}).toDOM()
 
-# realtime
+# immediate
 soft.render('<h1 :is="title"></h1>', {
    title: 'another amazing title' 
-});
+}).toString()
 ```
 
+#### data
+
+Soft can handle almost anything you place in your templates: synchronous values, callbacks, Promises and generators
+
+#### rendering
+
+Furthermore, it will let you either render to a String, or to DOM - simply call the corresponding method (`toString()` or `toDOM()`) of the object that `render()` returns
 
 #### examples
 
@@ -105,7 +114,7 @@ these:
 ```
 
 ```html
-<li :of="objects">(&self.bar;, &self[foo];)</li>
+<li :of="objects" data-bar="&self[bar];" data-foo="&self.foo;">(&self.bar;, &self[foo];)</li>
 ```
 
 become:
@@ -127,6 +136,6 @@ become:
 ```
 
 ```html
-<li>(2, 1)</li>
-<li>(4, 3)</li>
+<li data-bar="2" data-foo="1">(2, 1)</li>
+<li data-bar="4" data-foo="3">(4, 3)</li>
 ```
