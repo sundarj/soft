@@ -8,14 +8,24 @@ soft is an extensible templating engine that aims to be as close to plain HTML a
 
 #### syntax
 
-it uses three basic types of expression: elements, attributes, and entities which can be plugged in to an existing html document with minimal visual change, and which follow the same syntax as html (ish).
+it uses three basic types of expression: elements, attributes, and entities which can be plugged in to an existing html document with minimal visual change, and which follow the same syntax as html (ish). soft auto-closes elements, so you can even leave out closing tags if you want.
 
 #### elements
 
 ```html
-<import src="file/to/import" escaped?>
-<include src="file/to/import" escaped?>
+<!-- file extensions default to .html -->
+
+<import src="file/to/import?" escaped?>
+<include src="file/to/import?" escaped?>
 imports a file into the current document
+
+<block foo>
+</block>
+encapsulates a block (used for template inheritance)
+
+<extends layout>
+<extends rel="layout.ext">
+defines which template to inherit from
 
 <if item>
 <if item="value">
@@ -57,13 +67,11 @@ wherever these appear in the element (attributes or content), they will be repla
 You can precompile a string (which returns the render function), or render that string straight away
 
 ```js
-# compiling
 const render = soft.compile('<h1 :is="title"></h1>')
 render({
     title: 'an amazing title' 
 }).toDOM()
 
-# immediate
 soft.render('<h1 :is="title"></h1>', {
    title: 'another amazing title' 
 }).toString()
@@ -87,7 +95,8 @@ soft.configure({
       return fetch(attrs.src).then(res => res.text())
     }
   },
-  prefix: 'soft:' // soft:is, soft:of etc.,
+  prefix: 'soft:' // soft:is, soft:of ...
+  ext: 'soft' // default extension
 })
 ```
 
