@@ -1,5 +1,5 @@
 ### soft [![Build Status](https://travis-ci.org/sundarj/soft.svg?branch=rewrite)](https://travis-ci.org/sundarj/soft)
-unobtrusive html-esque templating engine (under development)
+light html-esque templating engine (under development)
 
 
 #### about
@@ -15,8 +15,8 @@ it uses three basic types of expression: elements, attributes, and entities whic
 ```html
 <!-- file extensions default to .html -->
 
-<import src="file/to/import?" escaped?>
-<include src="file/to/import?" escaped?>
+<import src="file/to/import" escaped?>
+<include src="file/to/import" escaped?>
 imports a file into the current document
 
 <block foo>
