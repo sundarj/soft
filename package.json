@@ -3,16 +3,16 @@
   "version": "0.0.0",
   "description": "html-esque templating engine",
   "main": "build/soft.js",
-  "jsnext:main": "build/soft.es2015.js",
+  "jsnext:main": "build/soft.es.js",
   "scripts": {
     "pretest": "npm run build",
     "test": "tap test/*.js",
     
     "build:umd": "rollup -c rollup.config.umd.js",
-    "build:es2015": "rollup -c rollup.config.es2015.js",
+    "build:es": "rollup -c rollup.config.es.js",
     "prebuild:minify": "npm run build:umd",
     "build:minify": "rollup -c rollup.config.minify.js",
-    "build": "npm run build:minify && npm run build:es2015",
+    "build": "npm run build:minify && npm run build:es",
     
     "prewatch": "npm run build",
     "watch": "wr 'npm run build:umd' src"
