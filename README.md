@@ -52,10 +52,6 @@ multiple helpers can be provided, delimited by the `|` character
 wherever these appear in the element (attributes or content), they will be replaced with the current item of the template ( à la Mustache {{.}} )
 ```
 
-#### helpers
-
-helpers are defined by calling `soft.helpers('foo', fn)` or `soft.helpers({ foo: fn })`
-
 #### usage
 
 You can precompile a string (which returns the render function), or render that string straight away
@@ -77,9 +73,23 @@ soft.render('<h1 :is="title"></h1>', {
 
 Soft can handle almost anything you place in your templates: synchronous values, callbacks, Promises and generators
 
-#### rendering
+#### configurable and extensible
 
-Furthermore, it will let you either render to a String, or to DOM - simply call the corresponding method (`toString()` or `toDOM()`) of the object that `render()` returns
+```js
+soft.configure({
+  helpers: {
+    caps(val, token) {
+      return val.toUpperCase()
+    } 
+  },
+  attributes: {
+    inline(attrs, token) {
+      return fetch(attrs.src).then(res => res.text())
+    }
+  },
+  prefix: 'soft:' // soft:is, soft:of etc.,
+})
+```
 
 #### examples
 
