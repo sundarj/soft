@@ -1,16 +1,18 @@
 "use strict";
 
-function prefixed(obj, prefix) {
-    return Array.prototype.concat.call(obj).map(item => (prefix||':') + item)
+function prefixed(item, prefix) {
+  if (typeof item === 'string') return prefix + item;
+  
+  return item.map(item => prefix + item)
 };
 
 export default function Syntax(prefix) {
-    return {
-        ENTITY: ['self', 'this', 'here'],
-        ATTRIBUTE: prefixed(['is', 'of', 'as']),
-        ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-        /*void: prefixed('void'),
-        voidElements: ['import', 'include'],*/
-        HELPER: prefixed('as'),
-    };
+  return {
+    ENTITY: ['self', 'this', 'here'],
+    ATTRIBUTE: prefixed(['is', 'of', 'as'], prefix),
+    ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi'], prefix),
+    /*void: prefixed('void'),
+    voidElements: ['import', 'include'],*/
+    HELPER: prefixed('as', prefix),
+  };
 }

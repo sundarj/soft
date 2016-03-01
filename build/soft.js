@@ -1,273 +1,313 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (factory((global.soft = {})));
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (factory((global.soft = global.soft || {})));
 }(this, function (exports) { 'use strict';
 
-  function contains(array, value) {
-      for (var i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
-          if (array[i] === value) return true;else if (array[l - i] === value) return true;
-      }
-      return false;
-  }
+    function contains(array, value) {
+        for (var i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
+            if (array[i] === value) return true;else if (array[l - i] === value) return true;
+        }
+        return false;
+    }
 
-  function each(arr, fn) {
-      var index = -1;
-      var length = arr.length;
+    function each(arr, fn) {
+        var index = -1;
+        var length = arr.length;
 
-      while (++index < length) {
-          fn(arr[index], index, arr);
-      }
-  };
-
-  function map(arr, fn) {
-      var index = -1;
-      var length = arr.length;
-      var result = Array(length);
-
-      while (++index < length) {
-          result[index] = fn(arr[index], index, arr);
-      }
-
-      return result;
-  };
-
-  function filter(arr, predic) {
-      var index = -1;
-      var length = arr.length;
-      var result = [];
-
-      while (++index < length) {
-          if (predic(arr[index])) result.push(arr[index]);
-      }
-
-      return result;
-  }
-
-  var squotRE = /'/g;
-  var quotRE$1 = /"/g;
-  var lfRE = /\n/g;
-  var crRE = /\r/g;
-  var slashRE = /\\/g;
-  var lineSepRE = /\u2028/;
-  var paraSepRE = /\u2029/;
-
-  function esc(s) {
-      return s.replace(slashRE, '\\\\').replace(squotRE, '\\\'').replace(quotRE$1, '\\"').replace(lfRE, '\\n').replace(crRE, '\\r').replace(lineSepRE, '\\u2028').replace(paraSepRE, '\\u2029');
-  }
-
-  function prefixed(obj, prefix) {
-      return Array.prototype.concat.call(obj).map(function (item) {
-          return (prefix || ':') + item;
-      });
-  };
-
-  function Syntax(prefix) {
-      return {
-          ENTITY: ['self', 'this', 'here'],
-          ATTRIBUTE: prefixed(['is', 'of', 'as']),
-          ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi']),
-          /*void: prefixed('void'),
-          voidElements: ['import', 'include'],*/
-          HELPER: prefixed('as')
-      };
-  }
-
-  var SYNTAX = Syntax();
-
-  var openRE = /^<([^ \/!]+?)( [^>]+)*?>/;
-  var closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/;
-  var commentRE = /^<!--(.+?)-->/;
-
-  var attrRE = /([^= ]+)(?:=("[^"]*"|'[^']*'|[^"'\s>]*))?/g;
-
-  function openToken(match) {
-    var token = {
-      t: match[1]
+        while (++index < length) {
+            fn(arr[index], index, arr);
+        }
     };
 
-    var attributes = match[2];
+    function map(arr, fn) {
+        var index = -1;
+        var length = arr.length;
+        var result = Array(length);
 
-    if (attributes) {
-      var attributeMap = {};
-
-      var attr = undefined;
-
-      while (attr = attrRE.exec(attributes)) {
-        attributeMap[attr[1]] = attr[2] || true;
-      }
-
-      token.a = attributeMap;
-    }
-
-    return token;
-  }
-
-  function lex(str) {
-    var tokens = [];
-    var length = str.length;
-
-    var pos = 0;
-    var m = undefined;
-    var buf = '';
-
-    while (pos < length) {
-      var remains = str.slice(pos);
-
-      // early exit in case of plain text
-      if (remains[0] !== '<') {
-        buf += str[pos++];
-
-        continue;
-      }
-
-      if (m = openRE.exec(remains)) {
-        pos += m[0].length;
-
-        m = openToken(m);
-      } else if (m = closeRE.exec(remains)) {
-        pos += m[0].length;
-
-        m = {
-          t: 'c'
-        };
-      } else if (m = commentRE.exec(remains)) {
-        // ignore comments
-
-        pos += m[0].length;
-        m = false;
-      }
-
-      if (m) {
-        if (buf) {
-          tokens.push(buf);
-          buf = '';
+        while (++index < length) {
+            result[index] = fn(arr[index], index, arr);
         }
 
-        tokens.push(m);
+        return result;
+    };
+
+    function filter(arr, predic) {
+        var index = -1;
+        var length = arr.length;
+        var result = [];
+
+        while (++index < length) {
+            if (predic(arr[index])) result.push(arr[index]);
+        }
+
+        return result;
+    }
+
+    var squotRE = /'/g;
+    var quotRE$1 = /"/g;
+    var lfRE = /\n/g;
+    var crRE = /\r/g;
+    var slashRE = /\\/g;
+    var lineSepRE = /\u2028/;
+    var paraSepRE = /\u2029/;
+
+    function esc(s) {
+        return s.replace(slashRE, '\\\\').replace(squotRE, '\\\'').replace(quotRE$1, '\\"').replace(lfRE, '\\n').replace(crRE, '\\r').replace(lineSepRE, '\\u2028').replace(paraSepRE, '\\u2029');
+    }
+
+    function prefixed(item, prefix) {
+      if (typeof item === 'string') return prefix + item;
+
+      return item.map(function (item) {
+        return prefix + item;
+      });
+    };
+
+    function Syntax(prefix) {
+      return {
+        ENTITY: ['self', 'this', 'here'],
+        ATTRIBUTE: prefixed(['is', 'of', 'as'], prefix),
+        ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi'], prefix),
+        /*void: prefixed('void'),
+        voidElements: ['import', 'include'],*/
+        HELPER: prefixed('as', prefix)
+      };
+    }
+
+    var SYNTAX = Syntax();
+
+    var openRE = /^<([^ \/!]+?)( [^>]+)*?>/;
+    var closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/;
+    var commentRE = /^<!--(.+?)-->/;
+
+    var attrRE = /([^= ]+)(?:=("[^"]*"|'[^']*'|[^"'\s>]*))?/g;
+
+    function openToken(match) {
+      var token = {
+        t: match[1]
+      };
+
+      var attributes = match[2];
+
+      if (attributes) {
+        var attributeMap = {};
+
+        var attr = undefined;
+
+        while (attr = attrRE.exec(attributes)) {
+          attributeMap[attr[1]] = attr[2] || true;
+        }
+
+        token.a = attributeMap;
+      }
+
+      return token;
+    }
+
+    function lex(str) {
+      var tokens = [];
+      var length = str.length;
+
+      var pos = 0;
+      var m = undefined;
+      var buf = '';
+
+      while (pos < length) {
+        var remains = str.slice(pos);
+
+        // early exit in case of plain text
+        if (remains[0] !== '<') {
+          buf += str[pos++];
+
+          continue;
+        }
+
+        if (m = openRE.exec(remains)) {
+          pos += m[0].length;
+
+          m = openToken(m);
+        } else if (m = closeRE.exec(remains)) {
+          pos += m[0].length;
+
+          m = {
+            t: 'c'
+          };
+        } else if (m = commentRE.exec(remains)) {
+          // ignore comments
+
+          pos += m[0].length;
+          m = false;
+        }
+
+        if (m) {
+          if (buf) {
+            tokens.push(buf);
+            buf = '';
+          }
+
+          tokens.push(m);
+        }
+      }
+
+      if (!m && buf) return buf;
+
+      return tokens;
+    }
+
+    var voidRE = /^(?:area|base|br|col|command|doctype|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|import|include)$/i;
+
+    var softEntities = SYNTAX.ENTITY.join('|');
+    var softEntityRE = new RegExp('&(?:' + softEntities + ');' + '|' + // plain ol' entities or..
+    '&(?:' + softEntities + ')' + // entities with
+    '(?:' + '\\.([^;]+)' + '|' + // dot notation or..
+    '\\[([^\\]]+)\\]' + ');' // bracket notation
+    );
+
+    var quotRE = /^['"]|['"]$/g;
+
+    function parseAttribute(attribute, attributes) {
+      var val = attributes[attribute];
+      if (typeof val !== 'string') return null;
+
+      var m = undefined;
+
+      if (m = val.match(softEntityRE)) {
+        each(SYNTAX.ATTRIBUTE, function (softAttribute) {
+          var item = attributes[softAttribute];
+
+          if (item) {
+            m.soft = {
+              i: item.replace(quotRE, '')
+            };
+
+            var helper = attributes[SYNTAX.HELPER];
+            if (helper) m.soft.h = helper.replace(quotRE, '');
+          }
+        });
+
+        attributes[attribute] = Object.assign({}, m);
       }
     }
 
-    if (!m && buf) return buf;
+    function parseSoftAttribute(attribute, token) {
+      var helperName = SYNTAX.HELPER;
+      if (attribute === helperName) return null;
 
-    return tokens;
-  }
+      var attributes = token.a;
+      var val = attributes[attribute];
 
-  var voidRE = /^(?:area|base|br|col|command|doctype|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|import|include)$/i;
+      if (!token.c) token.c = [];
 
-  var softEntities = SYNTAX.ENTITY.join('|');
-  var softEntityRE = new RegExp('&(?:' + softEntities + ');' + '|' + // plain ol' entities or..
-  '&(?:' + softEntities + ')' + // entities with
-  '(?:' + '\\.([^;]+)' + '|' + // dot notation or..
-  '\\[([^\\]]+)\\]' + ');' // bracket notation
-  );
+      var item = {
+        i: val.replace(quotRE, '')
+      };
 
-  var quotRE = /^['"]|['"]$/g;
+      var helper = attributes[helperName];
+      if (helper) item.h = helper.replace(quotRE, '');
 
-  function parseAttribute(attribute, attributes) {
-    var val = attributes[attribute];
-    if (typeof val !== 'string') return null;
+      token.c.push(item);
+    }
 
-    var m = undefined;
+    function parseAttributes(token) {
+      var attributes = token.a;
+      var toDelete = [];
 
-    if (m = val.match(softEntityRE)) {
-      attributes[attribute] = m;
-
-      each(SYNTAX.ATTRIBUTE, function (softAttribute) {
-        var item = attributes[softAttribute];
-        if (item) {
-          m.soft = {
-            i: item.replace(quotRE, '')
-          };
-
-          var helper = attributes[SYNTAX.HELPER];
-          if (helper) m.soft.h = helper.replace(quotRE, '');
+      each(Object.keys(attributes), function (attribute) {
+        if (contains(SYNTAX.ATTRIBUTE, attribute)) {
+          parseSoftAttribute(attribute, token);
+          toDelete.push(attribute);
+        } else {
+          parseAttribute(attribute, attributes);
         }
       });
+
+      each(toDelete, function (attribute) {
+        return delete attributes[attribute];
+      });
+
+      token.a = attributes;
     }
-  }
 
-  function parseAttributes(token) {
-    var tokenAttributes = token.a;
-    var toDelete = [];
+    function parseElement(token, parents) {
+      var $type = token.t;
 
-    each(Object.keys(tokenAttributes), function (attribute, index, attributes) {
-      if (contains(SYNTAX.ATTRIBUTE, attribute)) {
-        //parseSoftAttribute(attribute, token)
-        toDelete.push(attribute);
-      } else {
-        parseAttribute(attribute, tokenAttributes);
+      if ($type) {
+        if ($type === 'c') {
+          parents.pop();
+          return null;
+        }
+
+        if (token.a) parseAttributes(token);
       }
-    });
 
-    each(toDelete, function (attribute) {
-      return delete tokenAttributes[attribute];
-    });
+      var parent = parents[parents.length - 1];
+      var isString = typeof token === 'string';
 
-    token.a = tokenAttributes;
-  }
+      if (parent) {
+        if (!parent.c) parent.c = [];
 
-  function parseElement(token, parents) {
-    var $type = token.t;
+        parent.c.push(token);
 
-    if ($type) {
-      if ($type === 'c') {
-        parents.pop();
+        if (!isString && !voidRE.test($type)) {
+          parents.push(token);
+        }
+
         return null;
       }
 
-      if (token.a) parseAttributes(token);
+      if (isString) return null;
+
+      if (!voidRE.test($type)) parents.push(token);
+
+      return token;
     }
 
-    var parent = parents[parents.length - 1];
-    var isString = typeof token === 'string';
+    function parse(str) {
+      var tokens = lex(str);
+      if (typeof tokens === 'string') return tokens;
 
-    if (parent) {
-      if (!parent.c) parent.c = [];
+      if (CONFIG.prefix != null) SYNTAX = Syntax(CONFIG.prefix);
 
-      parent.c.push(token);
+      var parents = [];
 
-      if (!isString && !voidRE.test($type)) parents.push(token);
+      return filter(map(tokens, function (token) {
+        if (!parents.length && typeof token === 'string') {
+          return token;
+        }
 
-      return null;
+        return parseElement(token, parents);
+      }), Boolean);
     }
 
-    if (isString) return null;
+    var CACHE = {};
 
-    if (!voidRE.test($type)) parents.push(token);
+    function compile(body) {
+        var parsed = CACHE[body] || (CACHE[body] = parse(body));
+        parsed = esc(parsed.join(''));
 
-    return token;
-  }
+        return new Function('data', 'return \'' + parsed + '\'');
+    }
 
-  function parse(str) {
-    var tokens = lex(str);
-    if (typeof tokens === 'string') return tokens;
+    var CONFIG = {
+      prefix: ':'
+    };
 
-    var parents = [];
+    function configure(options) {
+      Object.assign(CONFIG, options);
 
-    return filter(map(tokens, function (token) {
-      if (!parents.length && typeof token === 'string') return token;
+      return soft;
+    }
 
-      return parseElement(token, parents);
-    }), Boolean);
-  }
+    function render(body, data) {
+      return compile(body)(data);
+    }
 
-  var CACHE = {};
-
-  function compile(body) {
-      var parsed = CACHE[body] || (CACHE[body] = parse(body));
-      parsed = esc(parsed.join(''));
-
-      return new Function('data', 'return \'' + parsed + '\'');
-  }
-
-  function render(body, data) {
-    return compile(body)(data);
-  }
-
-  exports.parse = parse;
-  exports.lex = lex;
-  exports.compile = compile;
-  exports.render = render;
+    exports.parse = parse;
+    exports.lex = lex;
+    exports.compile = compile;
+    exports.CONFIG = CONFIG;
+    exports.configure = configure;
+    exports.render = render;
 
 }));

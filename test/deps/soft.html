@@ -4,19 +4,21 @@
 <meta charset="UTF-8">
 <title>soft</title>
 
-<script src="../../src/parsers/html-parse-stringify.parse.js"></script>
+<!--<script src="../../src/parsers/html-parse-stringify.parse.js"></script>
 <script src="../../src/parsers/ejs.js"></script>
 <script src="../../src/parsers/hogan-3.0.2.js"></script>
 <script src="../../src/parsers/pegjs.parse.js"></script>
 <script src="../../src/parsers/ractive.parse.js"></script>
-<script src="../../src/parsers/swig.js"></script>
+<script src="../../src/parsers/swig.js"></script>-->
 
 <script src="../../build/soft.js"></script>
 <script>
     onload = () => {
         "use strict";
         
-        let parsed, VERBOSE = 1;
+        let parsed
+        
+        /*let VERBOSE = 1;
         
         console.groupCollapsed('other')
         
@@ -44,11 +46,11 @@
         
         VERBOSE && console.log(parsed)
         
-        console.groupEnd('other')
+        console.groupEnd('other')*/
         
-        console.time('soft:parse')
+        //console.time('soft:parse')
         parsed = soft.parse(tpl.textContent)
-        console.timeEnd('soft:parse')
+        //console.timeEnd('soft:parse')
         
         //console.log( soft.lex(tpl.textContent) )
         
@@ -57,6 +59,8 @@
        //console.log(tpl.textContent)
     }
 </script>
+
+<button onclick="console.log( soft.parse(tpl.textContent) )">soft.parse()</button>
 
 <script type="template/soft" id="tpl">
     <!-- some <i>comment</i> -->

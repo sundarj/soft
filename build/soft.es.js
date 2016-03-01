@@ -1,5 +1,80 @@
-import { each, map, filter, contains, trim } from './util'
-import Syntax from './syntax'
+function contains (array, value) {
+    for (let i = 0, l = -1 + array.length, m = Math.floor((l + 1) / 2); i <= m; i++) {
+        if ( array[i] === value )
+            return true
+        else if ( array[(l - i)] === value )
+            return true
+    }
+    return false
+}
+
+function each(arr, fn) {
+    let index = -1
+    const length = arr.length
+
+    while (++index < length) {
+        fn(arr[index], index, arr)
+    }
+};
+
+function map(arr, fn) {
+    let index = -1
+    const length = arr.length
+    const result = Array(length)
+
+    while (++index < length) {
+        result[index] = fn(arr[index], index, arr)
+    }
+
+    return result
+};
+
+function filter(arr, predic) {
+  let index = -1
+  const length = arr.length
+  const result = []
+  
+  while (++index < length) {
+    if ( predic(arr[index]) )
+      result.push(arr[index])
+  }
+  
+  return result
+}
+
+const squotRE = /'/g;
+const quotRE$1 = /"/g;
+const lfRE =  /\n/g;
+const crRE = /\r/g;
+const slashRE = /\\/g;
+const lineSepRE = /\u2028/;
+const paraSepRE = /\u2029/;
+
+function esc(s) {
+    return s
+            .replace(slashRE, '\\\\')
+            .replace(squotRE, '\\\'')
+            .replace(quotRE$1, '\\"')
+            .replace(lfRE, '\\n')
+            .replace(crRE, '\\r')
+            .replace(lineSepRE, '\\u2028')
+            .replace(paraSepRE, '\\u2029');
+  }
+
+function prefixed(obj, prefix) {
+  return Array.prototype.concat.call(obj).map(item => prefix + item)
+};
+
+function Syntax(prefix) {
+  return {
+    ENTITY: ['self', 'this', 'here'],
+    ATTRIBUTE: prefixed(['is', 'of', 'as'], prefix),
+    ELEMENT: prefixed(['import', 'include', 'if', 'else', 'endif', 'fi'], prefix),
+    /*void: prefixed('void'),
+    voidElements: ['import', 'include'],*/
+    HELPER: prefixed('as', prefix),
+  };
+}
 
 let SYNTAX = Syntax()
 
@@ -31,7 +106,7 @@ function openToken(match) {
   return token
 }
 
-export function lex(str) {
+function lex(str) {
   const tokens = []
   const length = str.length
   
@@ -117,13 +192,13 @@ function parseAttribute(attribute, attributes) {
       }
     })
     
-    attributes[attribute] = Object.assign({}, m) 
+    attributes[attribute] = m
   }
 }
 
 function parseSoftAttribute(attribute, token) {
   const helperName = SYNTAX.HELPER
-  if (attribute === helperName) return null
+  if (attribute === helperName) return null;
   
   const attributes = token.a
   const val = attributes[attribute]
@@ -131,12 +206,12 @@ function parseSoftAttribute(attribute, token) {
   if (!token.c) token.c = []
   
   const item = {
-    i: val.replace(quotRE, '')
+    i: val
   }
   
   const helper = attributes[helperName]
-  if (helper) item.h = helper.replace(quotRE, '')
-  
+  if (helper) item.h = helper
+    
   token.c.push(item)
 }
 
@@ -192,9 +267,7 @@ function parseElement(token, parents) {
   return token
 }
 
-import { CONFIG } from './soft'
-
-export default function parse(str) {
+function parse(str) {
     const tokens = lex(str)
     if (typeof tokens === 'string') return tokens
     
@@ -210,3 +283,28 @@ export default function parse(str) {
         return parseElement(token, parents)
       }), Boolean )
 }
+
+let CACHE = {}
+
+function compile (body) {
+    let parsed = CACHE[body] || ( CACHE[body] = parse(body) )
+    parsed = esc( parsed.join('') )
+        
+    return new Function( 'data', `return '${parsed}'` )
+}
+
+const CONFIG = {
+  prefix: ':'
+}
+
+function configure(options) {
+  Object.assign(CONFIG, options)
+  
+  return soft;
+}
+
+function render(body, data){
+  return compile(body)(data)
+}
+
+export { parse, lex, compile, CONFIG, configure, render };
