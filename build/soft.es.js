@@ -284,7 +284,7 @@ function parse(str) {
   const tokens = lex(str)
   if (typeof tokens === 'string') return tokens
   
-  if (CONFIG.prefix != null) SYNTAX = syntax(CONFIG.prefix)
+  if (config.prefix != null) SYNTAX = syntax(config.prefix)
 
   const parents = []
   
@@ -309,13 +309,13 @@ function compile(body) {
   return new Function( 'data', `return '${parsed}'` )
 }
 
-const CONFIG = {
+const config = {
   prefix: ':',
 }
 
 function configure(options) {
   
-  Object.assign(CONFIG, options)
+  Object.assign(config, options)
   
   /* eslint-disable no-undef */
   return soft
@@ -327,4 +327,4 @@ function render(body, data) {
   return compile(body)(data)
 }
 
-export { parse, lex, compile, CONFIG, configure, render };
+export { parse, lex, compile, config, configure, render };

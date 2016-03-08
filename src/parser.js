@@ -207,14 +207,14 @@ function parseElement(token, parents) {
   return token
 }
 
-import { CONFIG } from './soft'
+import { config } from './soft'
 
 export default function parse(str) {
   
   const tokens = lex(str)
   if (typeof tokens === 'string') return tokens
   
-  if (CONFIG.prefix != null) SYNTAX = syntax(CONFIG.prefix)
+  if (config.prefix != null) SYNTAX = syntax(config.prefix)
 
   const parents = []
   

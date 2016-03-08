@@ -285,7 +285,7 @@
     var tokens = lex(str);
     if (typeof tokens === 'string') return tokens;
 
-    if (CONFIG.prefix != null) SYNTAX = syntax(CONFIG.prefix);
+    if (config.prefix != null) SYNTAX = syntax(config.prefix);
 
     var parents = [];
 
@@ -308,13 +308,13 @@
     return new Function('data', 'return \'' + parsed + '\'');
   }
 
-  var CONFIG = {
+  var config = {
     prefix: ':'
   };
 
   function configure(options) {
 
-    Object.assign(CONFIG, options);
+    Object.assign(config, options);
 
     /* eslint-disable no-undef */
     return soft;
@@ -329,7 +329,7 @@
   exports.parse = parse;
   exports.lex = lex;
   exports.compile = compile;
-  exports.CONFIG = CONFIG;
+  exports.config = config;
   exports.configure = configure;
   exports.render = render;
 

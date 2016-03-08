@@ -4,13 +4,13 @@ export { parse, lex }
 import compile from './compiler'
 export { compile }
 
-export const CONFIG = {
+export const config = {
   prefix: ':',
 }
 
 export function configure(options) {
   
-  Object.assign(CONFIG, options)
+  Object.assign(config, options)
   
   /* eslint-disable no-undef */
   return soft
