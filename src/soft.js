@@ -5,15 +5,19 @@ import compile from './compiler'
 export { compile }
 
 export const CONFIG = {
-  prefix: ':'
+  prefix: ':',
 }
 
 export function configure(options) {
+  
   Object.assign(CONFIG, options)
   
-  return soft;
+  /* eslint-disable no-undef */
+  return soft
+  /* eslint-enable no-undef */
 }
 
-export function render(body, data){
+export function render(body, data) {
+  
   return compile(body)(data)
 }

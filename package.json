@@ -5,15 +5,17 @@
   "main": "build/soft.js",
   "jsnext:main": "build/soft.es.js",
   "scripts": {
-    "pretest": "npm run build",
+    "pretest": "npm run build; npm run lint",
+    "lint": "eslint src",
     "test": "tap test/*.js",
     
     "build:umd": "rollup -c rollup.config.umd.js",
     "build:es": "rollup -c rollup.config.es.js",
+    
     "prebuild:minify": "npm run build:umd",
     "build:minify": "rollup -c rollup.config.minify.js",
-    "build": "npm run build:minify && npm run build:es",
     
+    "build": "npm run build:minify && npm run build:es",
     "prewatch": "npm run build",
     "watch": "wr 'npm run build:umd' src"
   },
@@ -37,6 +39,9 @@
   "homepage": "https://github.com/SundarJ/soft#readme",
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
+    "eslint": "^2.3.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-react": "^4.2.0",
     "rollup": "~0.25.0",
     "rollup-plugin-babel": "^2.3.9",
     "rollup-plugin-uglify": "^0.2.0",

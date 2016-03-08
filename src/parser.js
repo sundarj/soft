@@ -1,7 +1,7 @@
-import { each, map, filter, contains, trim } from './util'
-import Syntax from './syntax'
+import { each, map, filter, contains } from './util'
+import syntax from './syntax'
 
-let SYNTAX = Syntax()
+let SYNTAX = syntax()
 
 const openRE = /^<([^ \/!]+?)( [^>]+)*?>/
 const closeRE = /^<\/(?:[^ \/]+?)(?: [^>]+)*?>/
@@ -10,8 +10,9 @@ const commentRE = /^<!--(.+?)-->/
 const attrRE = /([^= ]+)(?:=("[^"]*"|'[^']*'|[^"'\s>]*))?/g
 
 function openToken(match) {
+  
   const token = {
-    t: match[1]
+    t: match[1],
   }
   
   const attributes = match[2]
@@ -21,7 +22,7 @@ function openToken(match) {
     
     let attr
     
-    while( attr = attrRE.exec(attributes) ) {
+    while (( attr = attrRE.exec(attributes) )) {
       attributeMap[attr[1]] = attr[2] || true
     }
     
@@ -32,6 +33,7 @@ function openToken(match) {
 }
 
 export function lex(str) {
+  
   const tokens = []
   const length = str.length
   
@@ -49,17 +51,17 @@ export function lex(str) {
       continue
     }
     
-    if ( m = openRE.exec(remains) ) {
+    if (( m = openRE.exec(remains) )) {
       pos += m[0].length
       
       m = openToken(m)
-    } else if ( m = closeRE.exec(remains) ) {
+    } else if (( m = closeRE.exec(remains) )) {
       pos += m[0].length
       
       m = {
-        t: 'c'
+        t: 'c',
       }
-    } else if ( m = commentRE.exec(remains) ) {
+    } else if (( m = commentRE.exec(remains) )) {
       // ignore comments
       
       pos += m[0].length
@@ -76,54 +78,64 @@ export function lex(str) {
     }
   }
   
-  if (!m && buf)
-    return buf
+  if (!m && buf) return buf
 
   return tokens
 }
 
+/* eslint-disable max-len */
 
 const voidRE = /^(?:area|base|br|col|command|doctype|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|import|include)$/i
 
+/* eslint-enable max-len */
+
 const softEntities = SYNTAX.ENTITY.join('|')
+
+/* eslint-disable prefer-template */
 const softEntityRE = new RegExp(
   '&(?:' + softEntities + ');' + '|' + // plain ol' entities or..
   '&(?:' + softEntities + ')' + // entities with
   '(?:' + '\\.([^;]+)' + '|' + // dot notation or..
   '\\[([^\\]]+)\\]' + ');' // bracket notation
 )
+/* eslint-enable prefer-template */
 
 const quotRE = /^['"]|['"]$/g
 
 function parseAttribute(attribute, attributes) {
-  const val = attributes[attribute]
-  if ( typeof val !== 'string' )
-    return null
-    
-  let m
   
-  if ( m = val.match(softEntityRE) ) {
+  const val = attributes[attribute]
+  if (typeof val !== 'string') return
+  
+  /* eslint-disable prefer-const */
+  let m
+  /* eslint-enable prefer-const */
+  
+  if (( m = val.match(softEntityRE) )) {
     each(SYNTAX.ATTRIBUTE, softAttribute => {
+      
       const item = attributes[softAttribute]
       
       if (item) {
         m.soft = {
-          i: item.replace(quotRE, '')
+          i: item.replace(quotRE, ''),
         }
         
         const helper = attributes[SYNTAX.HELPER]
-        if (helper)
+        if (helper) {
           m.soft.h = helper.replace(quotRE, '')
+        }
       }
     })
     
-    attributes[attribute] = Object.assign({}, m) 
+    attributes[attribute] = Object.assign({}, m)
   }
 }
 
 function parseSoftAttribute(attribute, token) {
+  
   const helperName = SYNTAX.HELPER
-  if (attribute === helperName) return null
+  if (attribute === helperName) return
   
   const attributes = token.a
   const val = attributes[attribute]
@@ -131,7 +143,7 @@ function parseSoftAttribute(attribute, token) {
   if (!token.c) token.c = []
   
   const item = {
-    i: val.replace(quotRE, '')
+    i: val.replace(quotRE, ''),
   }
   
   const helper = attributes[helperName]
@@ -141,10 +153,12 @@ function parseSoftAttribute(attribute, token) {
 }
 
 function parseAttributes(token) {
+  
   const attributes = token.a
   const toDelete = []
   
   each(Object.keys(attributes), attribute => {
+    
     if ( contains(SYNTAX.ATTRIBUTE, attribute) ) {
       parseSoftAttribute(attribute, token)
       toDelete.push(attribute)
@@ -158,7 +172,8 @@ function parseAttributes(token) {
   token.a = attributes
 }
 
-function parseElement(token, parents) { 
+function parseElement(token, parents) {
+  
   const $type = token.t
   
   if ($type) {
@@ -170,7 +185,7 @@ function parseElement(token, parents) {
     if (token.a) parseAttributes(token)
   }
 
-  const parent = parents[parents.length-1]
+  const parent = parents[parents.length - 1]
   const isString = typeof token === 'string'
   
   if (parent) {
@@ -195,18 +210,22 @@ function parseElement(token, parents) {
 import { CONFIG } from './soft'
 
 export default function parse(str) {
-    const tokens = lex(str)
-    if (typeof tokens === 'string') return tokens
-    
-    if (CONFIG.prefix != null) SYNTAX = Syntax(CONFIG.prefix)
+  
+  const tokens = lex(str)
+  if (typeof tokens === 'string') return tokens
+  
+  if (CONFIG.prefix != null) SYNTAX = syntax(CONFIG.prefix)
 
-    const parents = []
+  const parents = []
+  
+  return filter(
+    map(tokens, token => {
     
-    return filter( map(tokens, token => {
-        if (!parents.length && typeof token === 'string') {
-          return token
-        }
-        
-        return parseElement(token, parents)
-      }), Boolean )
+      if (!parents.length && typeof token === 'string') {
+        return token
+      }
+      
+      return parseElement(token, parents)
+    }
+  ), Boolean)
 }
