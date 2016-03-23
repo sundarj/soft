@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (factory((global.soft = {})));
+  (factory((global.soft = global.soft || {})));
 }(this, function (exports) { 'use strict';
 
   function contains(array, value) {

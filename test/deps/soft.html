@@ -15,47 +15,47 @@
 <script>
     onload = () => {
         "use strict";
-        
+
         let parsed
-        
+
         /*let VERBOSE = 1;
-        
+
         console.groupCollapsed('other')
-        
+
         console.time('Hogan:scan')
         parsed = Hogan.scan(tpl.textContent)
         console.timeEnd('Hogan:scan')
-        
+
         VERBOSE && console.log(parsed)
-        
+
         console.time('Ractive:parse')
         parsed = new ractive(tpl.textContent).result
         console.timeEnd('Ractive:parse')
-        
+
         VERBOSE && console.log(parsed)
-        
+
         console.time('ejs:parse')
         parsed = ejs.parse(tpl.textContent)
         console.timeEnd('ejs:parse')
-        
+
         VERBOSE && console.log(parsed)
-        
+
         console.time('swig:parse')
         parsed = swig.parse(tpl.textContent)
         console.timeEnd('swig:parse')
-        
+
         VERBOSE && console.log(parsed)
-        
+
         console.groupEnd('other')*/
-        
+
         //console.time('soft:parse')
         parsed = soft.parse(tpl.textContent)
         //console.timeEnd('soft:parse')
-        
+
         //console.log( soft.lex(tpl.textContent) )
-        
+
        console.log(parsed)
-       
+
        //console.log(tpl.textContent)
     }
 </script>
@@ -67,31 +67,31 @@
 
     <h1 :is="title"></h1>
     <p :is="description"></p>
-    
+
     <p>Help me be <span :is="color" :as="color"></span></p>
-    
+
     <ul class="colors" data-boolean>
         <li class="list-color" :of="colors" :as="color" data-item="&self;">color is &lt;&self;&gt;</li>
     </ul>
-    
+
     <ul class="obj 1+1=2">
         <li class="obj-item" :of="objects" :as="capitalize">&self.second; <b>&self[third];</b></li>
     </ul>
-    
+
     <if true>
       <p>true</p>
       <else>
         <p>not true</p>
       </else>
     </if>
-    
+
     <if title="false">
       <p>title is false</p>
     </if>
-    
+
     <img src="&self;" :is="image">
     <img src="&this;" :is="image">
-    
+
     <pre class="license"><import src="LICENSE"></pre>
     <pre class="readme"><include src="README.md" escaped></pre>
 </script>
